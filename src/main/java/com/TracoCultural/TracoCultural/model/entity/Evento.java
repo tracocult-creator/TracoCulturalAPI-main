@@ -28,13 +28,14 @@ public class Evento {
     @Column(length = 45)
     private String cidade;
 
-    @Column(nullable = false)
-    private Long idCategoriaFk;
+    @Column(length = 255)
+    private String linkExterno;
 
+    private Long idUsuarioFk;
 
-
-
-
+    @ManyToOne
+    @JoinColumn(name = "idCategoriaFk")
+    private Categoria categoria;
 
 
 
@@ -65,6 +66,14 @@ public class Evento {
         this.descricao = descricao;
     }
 
+    public byte[] getCardImage() {
+        return cardImage;
+    }
+
+    public void setCardImage(byte[] cardImage) {
+        this.cardImage = cardImage;
+    }
+
     public Date getDataInicio() {
         return dataInicio;
     }
@@ -89,7 +98,27 @@ public class Evento {
         this.cidade = cidade;
     }
 
+    public String getLinkExterno() {
+        return linkExterno;
+    }
 
+    public void setLinkExterno(String linkExterno) {
+        this.linkExterno = linkExterno;
+    }
 
+    public Long getIdUsuarioFk() {
+        return idUsuarioFk;
+    }
 
+    public void setIdUsuarioFk(Long idUsuarioFk) {
+        this.idUsuarioFk = idUsuarioFk;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
 }

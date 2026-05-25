@@ -63,6 +63,21 @@ public class UsuarioController {
     }
 
 
+    // POST LOGIN
+    @PostMapping("/login")
+    public ResponseEntity<Object> logar(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String senha = body.get("senha");
+        Usuario usuarioDoBanco = usuarioRepository.findByEmail(email);
+        if (usuarioDoBanco == null || !usuarioDoBanco.getSenha().equals(senha)) {
+            return ResponseEntity.status(401).body(
+                    Map.of("status", 401, "retorno", "Unauthorized", "message", "Email ou senha inválidos")
+            );
+        }
+        return ResponseEntity.ok(usuarioDoBanco);
+    }
+
+
     //DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> DeletarUsuario(@PathVariable String id) {

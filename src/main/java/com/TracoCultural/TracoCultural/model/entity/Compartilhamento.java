@@ -5,20 +5,27 @@ import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name="Compartilhamento")
+@Table(name = "Compartilhamento")
 public class Compartilhamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long idUsuarioFk;
-    private Long idEventoFk;
+    @ManyToOne
+    @JoinColumn(name = "idUsuarioFk", nullable = false)
+    private Usuario usuario;
 
+    @ManyToOne
+    @JoinColumn(name = "idEventoFk", nullable = false)
+    private Evento evento;
+
+    private Date dataCompartilhamento;
 
 
 
     //              -------------------------------- Getter e Setter --------------------------------
+
 
     public Long getId() {
         return id;
@@ -28,21 +35,27 @@ public class Compartilhamento {
         this.id = id;
     }
 
-    public Long getIdUsuarioFk() {
-        return idUsuarioFk;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setIdUsuarioFk(Long idUsuarioFk) {
-        this.idUsuarioFk = idUsuarioFk;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
-    public Long getIdEventoFk() {
-        return idEventoFk;
+    public Evento getEvento() {
+        return evento;
     }
 
-    public void setIdEventoFk(Long idEventoFk) {
-        this.idEventoFk = idEventoFk;
+    public void setEvento(Evento evento) {
+        this.evento = evento;
     }
 
+    public Date getDataCompartilhamento() {
+        return dataCompartilhamento;
+    }
 
+    public void setDataCompartilhamento(Date dataCompartilhamento) {
+        this.dataCompartilhamento = dataCompartilhamento;
+    }
 }

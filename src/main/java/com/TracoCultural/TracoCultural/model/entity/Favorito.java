@@ -10,31 +10,40 @@ public class Favorito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long idUsuarioFk;
-    private Long idEventoFk;
+    @ManyToOne
+    @JoinColumn(name = "idUsuarioFk", nullable = false)
+    private Usuario usuario;
 
+    @ManyToOne
+    @JoinColumn(name = "idEventoFk", nullable = false)
+    private Evento evento;
 
 
 
     //              -------------------------------- Getter e Setter --------------------------------
 
 
-    public Long getIdUsuarioFk() {
-        return idUsuarioFk;
+    public Long getId() {
+        return id;
     }
 
-    public void setIdUsuarioFk(Long idUsuarioFk) {
-        this.idUsuarioFk = idUsuarioFk;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Long getIdEventoFk() {
-        return idEventoFk;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setIdEventoFk(Long idEventoFk) {
-        this.idEventoFk = idEventoFk;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
+    public Evento getEvento() {
+        return evento;
+    }
 
-
+    public void setEvento(Evento evento) {
+        this.evento = evento;
+    }
 }
