@@ -13,61 +13,37 @@ public class Usuario {
     @Column(length = 100, nullable = false)
     private String nome;
 
-    @Column(length = 45, nullable = false)
+    @Column(length = 45, nullable = false, unique = true)   // ← unique adicionado
     private String email;
 
     @Column(length = 255, nullable = false)
     private String senha;
 
-    private byte[] fotoPerfil;
+    @Lob
+@Column(name = "fotoPerfil", nullable = true)
+private byte[] fotoPerfil;
 
+    @Column(nullable = false, columnDefinition = "BIT DEFAULT 0")
     private boolean isAdm;
 
 
+    // -------------------------------- Getters e Setters --------------------------------
 
-    //              -------------------------------- Getter e Setter --------------------------------
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public byte[] getFotoPerfil() { return fotoPerfil; }
+    public void setFotoPerfil(byte[] fotoPerfil) { this.fotoPerfil = fotoPerfil; }
 
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
-
-    public boolean getIsAdm() {
-        return isAdm;
-    }
-
-    public void setIsAdm(boolean isAdm) {
-        this.isAdm = isAdm;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-
+    public boolean getIsAdm() { return isAdm; }
+    public void setIsAdm(boolean isAdm) { this.isAdm = isAdm; }
 }
