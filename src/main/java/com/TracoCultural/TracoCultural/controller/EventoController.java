@@ -1,10 +1,13 @@
 package com.TracoCultural.TracoCultural.controller;
 
+import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
+import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import com.TracoCultural.TracoCultural.model.services.EventoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,87 +19,83 @@ public class EventoController {
 
     @Autowired
     private EventoService eventoService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
+    private Usuario getUsuarioAutenticado() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return usuarioRepository.findByEmail(email);
+    }
 
-    // GET /api/v1/eventos
-    // GET /api/v1/eventos?cidade=SP
-    // GET /api/v1/eventos?categoriaId=1
-    // GET /api/v1/eventos?cidade=SP&categoriaId=1
     @GetMapping
     public ResponseEntity<List<Evento>> listarEventos(
             @RequestParam(required = false) String cidade,
             @RequestParam(required = false) Long categoriaId) {
-
-        if (cidade != null && categoriaId != null) {
+        if (cidade != null && categoriaId != null)
             return ResponseEntity.ok(eventoService.findByCidadeAndCategoria(cidade, categoriaId));
-        }
-        if (cidade != null) {
+        if (cidade != null)
             return ResponseEntity.ok(eventoService.findByCidade(cidade));
-        }
-        if (categoriaId != null) {
+        if (categoriaId != null)
             return ResponseEntity.ok(eventoService.findByCategoria(categoriaId));
-        }
         return ResponseEntity.ok(eventoService.findAll());
     }
 
+    @GetMapping("/meus")
+    public ResponseEntity<List<Evento>> meusEventos() {
+        return ResponseEntity.ok(eventoService.findByUsuarioId(getUsuarioAutenticado().getId()));
+    }
 
-    // GET /api/v1/eventos/{id}
     @GetMapping("/{id}")
     public ResponseEntity<Object> buscarPorId(@PathVariable String id) {
         try {
             return ResponseEntity.ok(eventoService.findById(Long.parseLong(id)));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "retorno", "Bad Request", "message", "O id informado não é válido: " + id)
-            );
+                    Map.of("status", 400, "retorno", "Bad Request", "message", "O id informado não é válido: " + id));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(
-                    Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage())
-            );
+                    Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage()));
         }
     }
 
-
-    // POST /api/v1/eventos
     @PostMapping
     public ResponseEntity<Evento> publicarEvento(@RequestBody Evento evento) {
+        evento.setIdUsuarioFk(getUsuarioAutenticado().getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(eventoService.save(evento));
     }
 
-
-    // PUT /api/v1/eventos/{id}
     @PutMapping("/{id}")
     public ResponseEntity<Object> atualizarEvento(@PathVariable String id, @RequestBody Evento evento) {
         try {
+            Evento existente = eventoService.findById(Long.parseLong(id));
+            if (!existente.getIdUsuarioFk().equals(getUsuarioAutenticado().getId())) {
+                return ResponseEntity.status(403).body(Map.of("message", "Acesso negado"));
+            }
             return ResponseEntity.ok(eventoService.update(Long.parseLong(id), evento));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "retorno", "Bad Request", "message", "Caminho informado inválido")
-            );
+                    Map.of("status", 400, "retorno", "Bad Request", "message", "Caminho informado inválido"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(
-                    Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage())
-            );
+                    Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage()));
         }
     }
 
-
-    // DELETE /api/v1/eventos/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deletarEvento(@PathVariable String id) {
         try {
+            Evento existente = eventoService.findById(Long.parseLong(id));
+            if (!existente.getIdUsuarioFk().equals(getUsuarioAutenticado().getId())) {
+                return ResponseEntity.status(403).body(Map.of("message", "Acesso negado"));
+            }
             eventoService.deleteById(Long.parseLong(id));
-            return ResponseEntity.ok(
-                    Map.of("status", 200, "retorno", "OK", "message", "Evento deletado com o ID: " + id)
-            );
+            return ResponseEntity.ok(Map.of("status", 200, "retorno", "OK", "message", "Evento deletado com o ID: " + id));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "retorno", "Bad Request", "message", "O id informado não é válido: " + id)
-            );
+                    Map.of("status", 400, "retorno", "Bad Request", "message", "O id informado não é válido: " + id));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(
-                    Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage())
-            );
+                    Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage()));
         }
     }
 }

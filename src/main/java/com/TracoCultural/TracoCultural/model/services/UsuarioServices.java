@@ -46,6 +46,9 @@ public class UsuarioServices {
         if (usuario.getSenha() != null && !usuario.getSenha().isBlank()) {
             existente.setSenha(passwordEncoder.encode(usuario.getSenha()));
         }
+        if (usuario.getEstado() != null) existente.setEstado(usuario.getEstado());
+        if (usuario.getIcone() != null) existente.setIcone(usuario.getIcone());
+        if (usuario.getCorFundo() != null) existente.setCorFundo(usuario.getCorFundo());
         return usuarioRepository.save(existente);
     }
 

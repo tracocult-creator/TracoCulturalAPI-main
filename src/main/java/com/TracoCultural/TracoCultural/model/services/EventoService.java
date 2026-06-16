@@ -59,4 +59,8 @@ public class EventoService {
         }
         eventoRepository.deleteById(id);
     }
+
+    public List<Evento> findByUsuarioId(Long id) {
+        return eventoRepository.findByIdUsuarioFk(id);
+    }
 }

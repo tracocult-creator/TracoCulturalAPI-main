@@ -1,5 +1,6 @@
 package com.TracoCultural.TracoCultural.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,13 +18,23 @@ public class Usuario {
     private String email;
 
     @Column(length = 255, nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String senha;
 
-    @Column(name = "fotoPerfil")
+    @Column(name = "foto_perfil")
     private byte[] fotoPerfil;
 
-    @Column(name = "isAdm")
+    @Column(name = "is_adm")
     private boolean isAdm;
+
+    @Column(length = 2)
+    private String estado;
+
+    @Column(length = 100)
+    private String icone;
+
+    @Column(name = "cor_fundo", length = 20)
+    private String corFundo;
 
 
 
@@ -78,5 +89,14 @@ public class Usuario {
     public void setFotoPerfil(byte[] fotoPerfil) {
         this.fotoPerfil = fotoPerfil;
     }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public String getIcone() { return icone; }
+    public void setIcone(String icone) { this.icone = icone; }
+
+    public String getCorFundo() { return corFundo; }
+    public void setCorFundo(String corFundo) { this.corFundo = corFundo; }
 
 }

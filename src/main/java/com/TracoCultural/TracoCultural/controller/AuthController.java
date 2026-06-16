@@ -40,8 +40,15 @@ public class AuthController {
 
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         Usuario novo = usuarioRepository.save(usuario);
+        String token = jwtUtil.gerarToken(novo.getEmail());
 
-        return ResponseEntity.status(201).body(novo);
+        return ResponseEntity.status(201).body(Map.of(
+                "token", token,
+                "id",    novo.getId(),
+                "nome",  novo.getNome(),
+                "email", novo.getEmail(),
+                "isAdm", novo.getIsAdm()
+        ));
     }
 
     // POST /api/v1/auth/login

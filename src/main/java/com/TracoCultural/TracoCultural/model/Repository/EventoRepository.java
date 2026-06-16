@@ -11,4 +11,5 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     List<Evento> findByCidadeIgnoreCase(String cidade);
     List<Evento> findByCategoriaId(Long categoriaId);
     List<Evento> findByCidadeIgnoreCaseAndCategoriaId(String cidade, Long categoriaId);
+    List<Evento> findByIdUsuarioFk(Long idUsuarioFk);
 }

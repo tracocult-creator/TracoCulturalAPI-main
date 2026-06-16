@@ -1,12 +1,13 @@
 package com.TracoCultural.TracoCultural.controller;
 
-
+import com.TracoCultural.TracoCultural.config.security.JwtUtil;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import com.TracoCultural.TracoCultural.model.services.UsuarioServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,50 +21,37 @@ public class UsuarioController {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private UsuarioServices usuarioServices;
+    @Autowired
+    private JwtUtil jwtUtil;
 
 
-
-    //GET
     @GetMapping
     public ResponseEntity<List<Usuario>> ListarTodos() {
         return ResponseEntity.ok(usuarioRepository.findAll());
     }
 
-
-    //GET BY ID
     @GetMapping("/{id}")
     public ResponseEntity<Object> listarProdutoPorId(@PathVariable String id) {
         try {
-            return ResponseEntity.ok(usuarioServices.findById(Long.parseLong((id))));
+            return ResponseEntity.ok(usuarioServices.findById(Long.parseLong(id)));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "status", 400,
-                            "retorno", "Bad Request",
-                            "message", "O id informado não é valido: " + id
-                    )
-            );
+                    Map.of("status", 400, "retorno", "Bad Request", "message", "O id informado não é valido: " + id));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(
-                    Map.of(
-                            "status", 404,
-                            "retorno", "Not Found",
-                            "message", "Usuario não encontrado com o ID: " + id
-                    )
-            );
+                    Map.of("status", 404, "retorno", "Not Found", "message", "Usuario não encontrado com o ID: " + id));
         }
     }
 
-
-    //POST
     @PostMapping("/auth/register")
-    public ResponseEntity<Usuario> SalvarUsuario(@RequestBody Usuario usuario) {
-        Usuario novo = usuarioRepository.save(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novo);
+    public ResponseEntity<Object> SalvarUsuario(@RequestBody Usuario usuario) {
+        Usuario novo = usuarioServices.save(usuario);
+        String token = jwtUtil.gerarToken(novo.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                Map.of("token", token, "id", novo.getId(), "nome", novo.getNome(),
+                        "email", novo.getEmail(), "isAdm", novo.getIsAdm()));
     }
 
-
-    // POST LOGIN
     @PostMapping("/login")
     public ResponseEntity<Object> logar(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -71,58 +59,40 @@ public class UsuarioController {
         Usuario usuarioDoBanco = usuarioRepository.findByEmail(email);
         if (usuarioDoBanco == null || !usuarioDoBanco.getSenha().equals(senha)) {
             return ResponseEntity.status(401).body(
-                    Map.of("status", 401, "retorno", "Unauthorized", "message", "Email ou senha inválidos")
-            );
+                    Map.of("status", 401, "retorno", "Unauthorized", "message", "Email ou senha inválidos"));
         }
         return ResponseEntity.ok(usuarioDoBanco);
     }
 
-
-    //DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> DeletarUsuario(@PathVariable String id) {
-            return usuarioServices.deleteById(id);
+        String emailAutenticado = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario autenticado = usuarioRepository.findByEmail(emailAutenticado);
+        try {
+            if (!autenticado.getId().equals(Long.parseLong(id))) {
+                return ResponseEntity.status(403).body(Map.of("message", "Acesso negado"));
+            }
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(Map.of("status", 400, "retorno", "Bad Request", "message", "Caminho inválido"));
+        }
+        return usuarioServices.deleteById(id);
     }
 
-
-    //ATUALIZAR
     @PutMapping("/{id}")
     public ResponseEntity<Object> AtualizarUsuario(@PathVariable String id, @RequestBody Usuario usuario) {
-        try{
+        String emailAutenticado = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario autenticado = usuarioRepository.findByEmail(emailAutenticado);
+        try {
+            if (!autenticado.getId().equals(Long.parseLong(id))) {
+                return ResponseEntity.status(403).body(Map.of("message", "Acesso negado"));
+            }
             return ResponseEntity.ok(usuarioServices.update(Long.parseLong(id), usuario));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "status", 400,
-                            "retorno", "Bad Request",
-                            "message", "Caminho informado inválido"
-                    ));
+                    Map.of("status", 400, "retorno", "Bad Request", "message", "Caminho informado inválido"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(
-                    Map.of(
-                            "status", 404,
-                            "retorno", "Not Found",
-                            "message", "Usuario não encontrado com o ID: " + id
-                    ));
+                    Map.of("status", 404, "retorno", "Not Found", "message", "Usuario não encontrado com o ID: " + id));
         }
     }
-
-
-
 }
-
-
-
-
-
-//  @RequestBody  : Corpo da Requisição ( Recebendo um objeto JSON )
-//  ResponseEntity: Toda resposta HTTP (status, cabeçalhos e corpo), aqui temos mais controle sobre
-//  o que é devolvido para o cliente
-
-//  1. Status HTTP: (200 ok,201 CREATED, 404 NOT FOUND etc...)
-//  2. Headers: ( cabeçalhos extras, como location, Authorization etc...)
-//  3. Body: ( o objeto que será convertido em JSON/XML para o cliente )
-
-
-
-
