@@ -22,7 +22,7 @@ public class Comentario {
     @Column(length = 500, nullable = false)
     private String texto;
 
-    @Column(nullable = false)
+    @Column(name = "dataCriacao", nullable = false)
     private Date dataCriacao;
 
     public Long getId() { return id; }

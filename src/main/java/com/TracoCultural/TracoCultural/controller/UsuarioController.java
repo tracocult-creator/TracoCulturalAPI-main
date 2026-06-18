@@ -101,12 +101,12 @@ public class UsuarioController {
             usuarioServices.atualizarSenha(Long.parseLong(id),
                     body.get("senhaAtual"), body.get("novaSenha"));
             return ResponseEntity.ok(Map.of("status", 200, "retorno", "OK", "message", "Senha atualizada com sucesso"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "retorno", "Bad Request", "message", e.getMessage()));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(
                     Map.of("status", 400, "retorno", "Bad Request", "message", "Caminho informado inválido"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("status", 400, "retorno", "Bad Request", "message", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(
                     Map.of("status", 404, "retorno", "Not Found", "message", "Usuário não encontrado com o ID: " + id));

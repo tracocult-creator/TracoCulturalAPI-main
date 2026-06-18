@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -43,12 +44,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/auth/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/eventos").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/eventos/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/comentarios").permitAll()
                 // Rotas protegidas
                 .requestMatchers(HttpMethod.POST,   "/api/v1/eventos").authenticated()
                 .requestMatchers(HttpMethod.PUT,    "/api/v1/eventos/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/eventos/**").authenticated()
                 .requestMatchers("/api/v1/favoritos/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/v1/comentarios").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/comentarios").authenticated()
                 .requestMatchers("/api/v1/usuarios/**").authenticated()
                 .anyRequest().authenticated()
@@ -66,7 +67,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of(allowedOrigins.split(",")));
+        config.setAllowedOriginPatterns(List.of(
+                Arrays.stream(allowedOrigins.split(","))
+                      .map(String::trim)
+                      .toArray(String[]::new)
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));

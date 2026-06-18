@@ -21,21 +21,24 @@ public class Evento {
     @Column(length = 255)
     private String descricao;
 
+    @Column(name = "cardImage")
     private byte[] cardImage;
 
     @NotNull(message = "Data de início é obrigatória")
-    @Column(nullable = false)
+    @Column(name = "dataInicio", nullable = false)
     private Date dataInicio;
 
+    @Column(name = "dataFim")
     private Date dataFim;
 
     @NotBlank(message = "Cidade é obrigatória")
     @Column(length = 45)
     private String cidade;
 
-    @Column(length = 255)
+    @Column(name = "linkExterno", length = 255)
     private String linkExterno;
 
+    @Column(name = "idUsuarioFk")
     private Long idUsuarioFk;
 
     @NotNull(message = "Categoria é obrigatória")
