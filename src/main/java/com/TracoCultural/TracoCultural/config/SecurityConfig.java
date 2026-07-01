@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/eventos/*/comentarios").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/eventos/*/comentarios/**").authenticated()
                 .requestMatchers("/api/v1/usuarios/**").authenticated()
+                .requestMatchers("/api/v1/admin/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -46,6 +46,12 @@ public class Evento {
     @JoinColumn(name = "idCategoriaFk")
     private Categoria categoria;
 
+    @Column(name = "destacado")
+    private Boolean destacado = false;
+
+    @Column(name = "patrocinado")
+    private Boolean patrocinado = false;
+
 
 
     //              -------------------------------- Getter e Setter --------------------------------
@@ -130,4 +136,10 @@ public class Evento {
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
     }
+
+    public Boolean getDestacado() { return destacado; }
+    public void setDestacado(Boolean destacado) { this.destacado = destacado; }
+
+    public Boolean getPatrocinado() { return patrocinado; }
+    public void setPatrocinado(Boolean patrocinado) { this.patrocinado = patrocinado; }
 }
