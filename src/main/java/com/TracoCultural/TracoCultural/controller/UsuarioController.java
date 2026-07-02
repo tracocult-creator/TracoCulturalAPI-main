@@ -1,6 +1,7 @@
 package com.TracoCultural.TracoCultural.controller;
 
 import com.TracoCultural.TracoCultural.config.security.JwtUtil;
+import com.TracoCultural.TracoCultural.util.EmailDomainValidator;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.dto.UsuarioDTO;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
@@ -51,6 +52,8 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Nome é obrigatório"));
         if (usuario.getEmail() == null || !usuario.getEmail().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))
             return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Email inválido"));
+        if (!EmailDomainValidator.dominioValido(usuario.getEmail()))
+            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "O domínio do email informado não existe"));
         if (usuario.getSenha() == null || usuario.getSenha().length() < 8)
             return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Senha deve ter no mínimo 8 caracteres"));
         if (usuarioRepository.findByEmail(usuario.getEmail()) != null)
