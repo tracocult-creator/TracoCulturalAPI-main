@@ -76,7 +76,7 @@ public class EventoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> atualizarEvento(@PathVariable String id, @Valid @RequestBody Evento evento) {
+    public ResponseEntity<Object> atualizarEvento(@PathVariable String id, @RequestBody Evento evento) {
         try {
             Evento existente = eventoService.findById(Long.parseLong(id));
             if (!existente.getIdUsuarioFk().equals(getUsuarioAutenticado().getId())) {

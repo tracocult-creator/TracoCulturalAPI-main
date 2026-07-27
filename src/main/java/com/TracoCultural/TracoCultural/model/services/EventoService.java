@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -63,18 +64,23 @@ public class EventoService {
         if (evento.getCardImage() != null && evento.getCardImage().length > LIMITE_IMAGEM_BYTES)
             throw new IllegalArgumentException("Imagem deve ter no máximo 2MB.");
 
-        if (evento.getDataFim() != null && evento.getDataInicio() != null
-                && !evento.getDataFim().after(evento.getDataInicio()))
+        Date dataInicioFinal = evento.getDataInicio() != null ? evento.getDataInicio() : existente.getDataInicio();
+        Date dataFimFinal = evento.getDataFim() != null ? evento.getDataFim() : existente.getDataFim();
+
+        if (dataFimFinal != null && !dataFimFinal.after(dataInicioFinal))
             throw new IllegalArgumentException("Data de término deve ser posterior à data de início.");
 
-        existente.setNome(evento.getNome());
+        // Atualização parcial: só sobrescreve o que veio preenchido no payload,
+        // preservando nome/cidade/categoria/imagem existentes quando omitidos
+        // (o formulário de edição do front web e do mobile não reenvia todos os campos).
+        if (evento.getNome() != null && !evento.getNome().isBlank()) existente.setNome(evento.getNome());
         existente.setDescricao(evento.getDescricao());
-        existente.setDataInicio(evento.getDataInicio());
-        existente.setDataFim(evento.getDataFim());
-        existente.setCidade(evento.getCidade());
+        existente.setDataInicio(dataInicioFinal);
+        existente.setDataFim(dataFimFinal);
+        if (evento.getCidade() != null && !evento.getCidade().isBlank()) existente.setCidade(evento.getCidade());
         existente.setLinkExterno(evento.getLinkExterno());
-        existente.setCategoria(evento.getCategoria());
-        existente.setCardImage(evento.getCardImage());
+        if (evento.getCategoria() != null) existente.setCategoria(evento.getCategoria());
+        if (evento.getCardImage() != null) existente.setCardImage(evento.getCardImage());
         return eventoRepository.save(existente);
     }
 
