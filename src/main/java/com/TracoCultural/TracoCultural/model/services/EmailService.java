@@ -20,6 +20,20 @@ public class EmailService {
     @Value("${app.mail.remetente-nome:Traco Cultural}")
     private String remetenteNome;
 
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
+    @jakarta.annotation.PostConstruct
+    public void verificarConfiguracao() {
+        if (mailUsername == null || mailUsername.isBlank()) {
+            logger.warn("ATENCAO: spring.mail.username esta vazio! " +
+                    "As variaveis de ambiente MAIL_USERNAME/MAIL_PASSWORD nao estao chegando ao processo. " +
+                    "Emails NAO serao enviados ate isso ser corrigido.");
+        } else {
+            logger.info("EmailService configurado com o remetente: {}", mailUsername);
+        }
+    }
+
     /**
      * Envia o codigo de confirmacao de cadastro (ou reenvio) para o email do usuario.
      * Lanca RuntimeException se o envio falhar, para que o controller possa
@@ -57,7 +71,7 @@ public class EmailService {
             mensagem.setText(corpo);
             mailSender.send(mensagem);
         } catch (MailException e) {
-            logger.error("Falha ao enviar email para {}: {}", destinatario, e.getMessage());
+            logger.error("Falha ao enviar email para {}", destinatario, e);
             throw new RuntimeException("Nao foi possivel enviar o email de confirmacao. Tente novamente mais tarde.", e);
         }
     }
