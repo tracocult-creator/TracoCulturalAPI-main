@@ -3,6 +3,8 @@ package com.TracoCultural.TracoCultural.model.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "Usuario")
 public class Usuario {
@@ -35,6 +37,17 @@ public class Usuario {
 
     @Column(name = "cor_fundo", length = 20)
     private String corFundo;
+
+    @Column(name = "confirmado", nullable = false)
+    private boolean confirmado = false;
+
+    @Column(name = "codigo_verificacao", length = 6)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String codigoVerificacao;
+
+    @Column(name = "codigo_expiracao")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private LocalDateTime codigoExpiracao;
 
 
 
@@ -98,5 +111,14 @@ public class Usuario {
 
     public String getCorFundo() { return corFundo; }
     public void setCorFundo(String corFundo) { this.corFundo = corFundo; }
+
+    public boolean isConfirmado() { return confirmado; }
+    public void setConfirmado(boolean confirmado) { this.confirmado = confirmado; }
+
+    public String getCodigoVerificacao() { return codigoVerificacao; }
+    public void setCodigoVerificacao(String codigoVerificacao) { this.codigoVerificacao = codigoVerificacao; }
+
+    public LocalDateTime getCodigoExpiracao() { return codigoExpiracao; }
+    public void setCodigoExpiracao(LocalDateTime codigoExpiracao) { this.codigoExpiracao = codigoExpiracao; }
 
 }

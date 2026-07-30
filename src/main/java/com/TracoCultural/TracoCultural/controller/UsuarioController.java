@@ -48,27 +48,10 @@ public class UsuarioController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<Object> SalvarUsuario(@RequestBody Usuario usuario) {
-        if (usuario.getNome() == null || usuario.getNome().isBlank())
-            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Nome é obrigatório"));
-        if (usuario.getEmail() == null || !usuario.getEmail().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))
-            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Email inválido"));
-        if (!EmailDomainValidator.dominioValido(usuario.getEmail()))
-            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "O domínio do email informado não existe"));
-        if (usuario.getSenha() == null || usuario.getSenha().length() < 8)
-            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Senha deve ter no mínimo 8 caracteres"));
-        if (usuarioRepository.findByEmail(usuario.getEmail()) != null)
-            return ResponseEntity.status(409).body(Map.of("status", 409, "message", "Email já cadastrado"));
-
-        usuario.setIsAdm(false);
-        Usuario novo = usuarioServices.save(usuario);
-        String token = jwtUtil.gerarToken(novo.getEmail());
-        return ResponseEntity.status(201).body(Map.of(
-                "token", token,
-                "id", novo.getId(),
-                "nome", novo.getNome(),
-                "email", novo.getEmail(),
-                "isAdm", novo.getIsAdm()
-        ));
+        // Endpoint legado desativado: criava a conta já ativa e sem exigir confirmação
+        // de email, contornando o fluxo de verificação. Use POST /api/v1/auth/register.
+        return ResponseEntity.status(410).body(
+                Map.of("status", 410, "message", "Use POST /api/v1/auth/register"));
     }
 
     @PostMapping("/login")
