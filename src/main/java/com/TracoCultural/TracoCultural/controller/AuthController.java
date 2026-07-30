@@ -108,7 +108,7 @@ public class AuthController {
             );
         }
 
-        if (!usuario.isConfirmado()) {
+        if (!usuario.isConfirmado() && !usuario.getIsAdm()) {
             return ResponseEntity.status(403).body(
                     Map.of("status", 403, "retorno", "Forbidden",
                             "message", "Email ainda não confirmado. Verifique seu email para ativar a conta.",
