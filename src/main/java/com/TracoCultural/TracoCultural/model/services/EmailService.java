@@ -40,11 +40,11 @@ public class EmailService {
      * responder com um erro claro ao invés de mascarar a falha.
      */
     public void enviarCodigoConfirmacao(String destinatario, String nome, String codigo) {
-        String assunto = "Confirme seu cadastro - " + remetenteNome;
-        String corpo = "Ola, " + nome + "!\n\n"
-                + "Seu codigo de confirmacao e: " + codigo + "\n\n"
-                + "Esse codigo expira em 15 minutos.\n"
-                + "Se voce nao criou uma conta no " + remetenteNome + ", pode ignorar este email.";
+        String assunto = "Confirme seu cadastro - Traço Cultural";
+        String corpo = "- Saudações, " + nome + "!\n\n"
+                + "Seu código para confirmação de cadastro é: " + codigo + "\n\n"
+                + "Esse código expira em 15 minutos.\n"
+                + "Se voce nao criou uma conta no " + remetenteNome + ", ignore este email.";
 
         enviar(destinatario, assunto, corpo);
     }
