@@ -28,7 +28,7 @@ public class AdminController {
         return usuarioRepository.findByEmail(auth.getName());
     }
 
-    // ── Dashboard ──────────────────────────────────────────────────────────────
+//dashborrd
 
     @GetMapping("/dashboard")
     public ResponseEntity<Object> dashboard(Authentication auth) {
@@ -36,7 +36,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.dashboard());
     }
 
-    // ── Usuários ───────────────────────────────────────────────────────────────
+    //usuarioss
 
     @GetMapping("/usuarios")
     public ResponseEntity<Object> listarUsuarios(Authentication auth) {
@@ -65,7 +65,7 @@ public class AdminController {
         }
     }
 
-    // ── Eventos ────────────────────────────────────────────────────────────────
+    //eventos
 
     @GetMapping("/eventos")
     public ResponseEntity<Object> listarEventos(Authentication auth) {
@@ -116,7 +116,7 @@ public class AdminController {
         }
     }
 
-    // ── Comentários ────────────────────────────────────────────────────────────
+    //comentrios
 
     @GetMapping("/comentarios")
     public ResponseEntity<Object> listarComentarios(Authentication auth) {

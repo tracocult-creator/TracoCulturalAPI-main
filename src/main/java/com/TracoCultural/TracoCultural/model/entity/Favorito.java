@@ -19,9 +19,7 @@ public class Favorito {
     private Evento evento;
 
 
-
-    //              -------------------------------- Getter e Setter --------------------------------
-
+ 
 
     public Long getId() {
         return id;

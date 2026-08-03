@@ -51,10 +51,7 @@ public class Evento {
 
     @Column(name = "patrocinado")
     private Boolean patrocinado = false;
-
-
-
-    //              -------------------------------- Getter e Setter --------------------------------
+ 
 
 
     public Long getId() {

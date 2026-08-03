@@ -48,12 +48,7 @@ public class Usuario {
     @Column(name = "codigo_expiracao")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private LocalDateTime codigoExpiracao;
-
-
-
-    //              -------------------------------- Getter e Setter --------------------------------
-
-
+ 
 
     public Long getId() {
         return id;

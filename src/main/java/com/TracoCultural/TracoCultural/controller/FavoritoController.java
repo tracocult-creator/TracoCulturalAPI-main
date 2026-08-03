@@ -24,7 +24,6 @@ public class FavoritoController {
     private UsuarioRepository usuarioRepository;
 
 
-    // Retorna o usuário autenticado a partir do email no token JWT
     private Usuario usuarioAutenticado() {
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByEmail(email);
@@ -35,7 +34,8 @@ public class FavoritoController {
     }
 
 
-    // GET /api/v1/favoritos
+
+
     @GetMapping
     public ResponseEntity<List<Favorito>> listarFavoritos() {
         Usuario usuario = usuarioAutenticado();
@@ -43,8 +43,7 @@ public class FavoritoController {
     }
 
 
-    // POST /api/v1/favoritos
-    // Body: { "idEventoFk": 1 }  (idUsuarioFk é ignorado — vem do token)
+    
     @PostMapping
     public ResponseEntity<Object> favoritar(@RequestBody Map<String, Long> body) {
         Long eventoId = body.get("idEventoFk");
@@ -65,8 +64,7 @@ public class FavoritoController {
         }
     }
 
-
-    // DELETE /api/v1/favoritos/{eventoId}
+    
     @DeleteMapping("/{eventoId}")
     public ResponseEntity<Object> desfavoritar(@PathVariable Long eventoId) {
         try {

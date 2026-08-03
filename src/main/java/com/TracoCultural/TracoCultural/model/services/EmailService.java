@@ -16,7 +16,6 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    // Cores da identidade visual do Traco Cultural
     private static final String COR_DOURADO = "#D4A373";
     private static final String COR_DOURADO_ESCURO = "#B8875A";
     private static final String COR_FUNDO = "#FAF6F1";
@@ -29,11 +28,6 @@ public class EmailService {
     @Value("${app.mail.remetente-nome:Traço Cultural}")
     private String remetenteNome;
 
-    /**
-     * Envia o codigo de confirmacao de cadastro (ou reenvio) para o email do usuario.
-     * Lanca RuntimeException se o envio falhar, para que o controller possa
-     * responder com um erro claro ao invés de mascarar a falha.
-     */
     public void enviarCodigoConfirmacao(String destinatario, String nome, String codigo) {
         String assunto = "Confirme seu cadastro - " + remetenteNome;
         String html = montarTemplate(
@@ -46,9 +40,7 @@ public class EmailService {
         enviar(destinatario, assunto, html);
     }
 
-    /**
-     * Envia o codigo de redefinicao de senha para o email do usuario.
-     */
+  
     public void enviarCodigoRedefinicaoSenha(String destinatario, String nome, String codigo) {
         String assunto = "Redefinição de senha - " + remetenteNome;
         String html = montarTemplate(

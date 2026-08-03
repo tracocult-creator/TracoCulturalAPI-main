@@ -40,7 +40,7 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
 
-    // POST /api/v1/auth/register
+    
     @PostMapping("/register")
     public ResponseEntity<Object> register(@RequestBody Usuario usuario) {
         if (usuario.getEmail() == null || usuario.getSenha() == null || usuario.getNome() == null) {
@@ -80,7 +80,7 @@ public class AuthController {
         ));
     }
 
-    // POST /api/v1/auth/login
+
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -128,7 +128,7 @@ public class AuthController {
         ));
     }
 
-    // POST /api/v1/auth/verificar-codigo
+    
     @PostMapping("/verificar-codigo")
     public ResponseEntity<Object> verificarCodigo(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -175,8 +175,6 @@ public class AuthController {
                 "email", usuario.getEmail(), "isAdm", usuario.getIsAdm()
         ));
     }
-
-    // POST /api/v1/auth/reenviar-codigo
     @PostMapping("/reenviar-codigo")
     public ResponseEntity<Object> reenviarCodigo(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -222,7 +220,6 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Código reenviado com sucesso."));
     }
 
-    // POST /api/v1/auth/esqueci-senha
     @PostMapping("/esqueci-senha")
     public ResponseEntity<Object> esqueciSenha(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -261,7 +258,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Se o email existir, um código de redefinição foi enviado."));
     }
 
-    // POST /api/v1/auth/redefinir-senha
+
     @PostMapping("/redefinir-senha")
     public ResponseEntity<Object> redefinirSenha(@RequestBody Map<String, String> body) {
         String email = body.get("email");

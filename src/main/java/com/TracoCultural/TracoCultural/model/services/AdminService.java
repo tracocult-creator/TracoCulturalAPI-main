@@ -20,9 +20,7 @@ public class AdminService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private EventoRepository eventoRepository;
     @Autowired private ComentarioRepository comentarioRepository;
-
-    // ── Dashboard ──────────────────────────────────────────────────────────────
-
+ 
     public Map<String, Long> dashboard() {
         long usuarios       = usuarioRepository.count();
         long administradores = usuarioRepository.findAll().stream().filter(Usuario::getIsAdm).count();
@@ -38,9 +36,7 @@ public class AdminService {
             "eventosDestacados", destacados
         );
     }
-
-    // ── Usuários ───────────────────────────────────────────────────────────────
-
+ 
     public List<UsuarioDTO> listarUsuarios() {
         return usuarioRepository.findAll().stream().map(UsuarioDTO::new).toList();
     }
@@ -62,10 +58,7 @@ public class AdminService {
         u.setIsAdm(!u.getIsAdm());
         return new UsuarioDTO(usuarioRepository.save(u));
     }
-
-    // ── Eventos ────────────────────────────────────────────────────────────────
-
-    public List<Evento> listarEventos() {
+ public List<Evento> listarEventos() {
         return eventoRepository.findAll();
     }
 
@@ -108,9 +101,7 @@ public class AdminService {
         e.setPatrocinado(!Boolean.TRUE.equals(e.getPatrocinado()));
         return eventoRepository.save(e);
     }
-
-    // ── Comentários ────────────────────────────────────────────────────────────
-
+ 
     public List<Comentario> listarComentarios() {
         return comentarioRepository.findAll();
     }

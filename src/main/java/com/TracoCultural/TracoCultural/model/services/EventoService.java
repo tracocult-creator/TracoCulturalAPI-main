@@ -69,10 +69,7 @@ public class EventoService {
 
         if (dataFimFinal != null && !dataFimFinal.after(dataInicioFinal))
             throw new IllegalArgumentException("Data de término deve ser posterior à data de início.");
-
-        // Atualização parcial: só sobrescreve o que veio preenchido no payload,
-        // preservando nome/cidade/categoria/imagem existentes quando omitidos
-        // (o formulário de edição do front web e do mobile não reenvia todos os campos).
+ 
         if (evento.getNome() != null && !evento.getNome().isBlank()) existente.setNome(evento.getNome());
         existente.setDescricao(evento.getDescricao());
         existente.setDataInicio(dataInicioFinal);

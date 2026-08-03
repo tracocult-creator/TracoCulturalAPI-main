@@ -24,7 +24,7 @@ public class Compartilhamento {
 
 
 
-    //              -------------------------------- Getter e Setter --------------------------------
+    
 
 
     public Long getId() {

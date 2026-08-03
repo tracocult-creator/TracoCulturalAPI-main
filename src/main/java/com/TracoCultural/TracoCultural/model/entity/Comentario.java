@@ -23,9 +23,7 @@ public class Comentario {
 
     @Column(name = "id_evento_fk", nullable = false)
     private Long idEventoFk;
-
-    // Não existe coluna correspondente no banco — preenchido em memória
-    // pelo Service ao montar a resposta, nunca persistido.
+ 
     @Transient
     private String nomeUsuario;
 
@@ -33,11 +31,6 @@ public class Comentario {
     public void prePersist() {
         this.dataCriacao = LocalDateTime.now();
     }
-
-
-
-    //              -------------------------------- Getter e Setter --------------------------------
-
 
 
     public Long getId() {

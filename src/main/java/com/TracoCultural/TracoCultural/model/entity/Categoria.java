@@ -14,9 +14,7 @@ public class Categoria {
     private String nome;
 
 
-
-    //              -------------------------------- Getter e Setter --------------------------------
-
+ 
     public Long getId() {
         return id;
     }
