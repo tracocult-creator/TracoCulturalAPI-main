@@ -158,7 +158,7 @@ public class AuthController {
         if (usuario.getCodigoVerificacao() == null
                 || usuario.getCodigoExpiracao() == null
                 || usuario.getCodigoExpiracao().isBefore(LocalDateTime.now())
-                || !usuario.getCodigoVerificacao().equals(codigo)) {
+                || !usuario.getCodigoVerificacao().trim().equals(codigo.trim())) {
             return ResponseEntity.status(400).body(
                     Map.of("status", 400, "retorno", "Bad Request", "message", "Código inválido ou expirado.")
             );
@@ -278,7 +278,7 @@ public class AuthController {
                 && usuario.getCodigoVerificacao() != null
                 && usuario.getCodigoExpiracao() != null
                 && usuario.getCodigoExpiracao().isAfter(LocalDateTime.now())
-                && usuario.getCodigoVerificacao().equals(codigo);
+                && usuario.getCodigoVerificacao().trim().equals(codigo.trim());
 
         return ResponseEntity.ok(Map.of("valido", valido));
     }
@@ -306,7 +306,7 @@ public class AuthController {
         if (usuario.getCodigoVerificacao() == null
                 || usuario.getCodigoExpiracao() == null
                 || usuario.getCodigoExpiracao().isBefore(LocalDateTime.now())
-                || !usuario.getCodigoVerificacao().equals(codigo)) {
+                || !usuario.getCodigoVerificacao().trim().equals(codigo.trim())) {
             return ResponseEntity.status(400).body(
                     Map.of("status", 400, "retorno", "Bad Request", "message", "Código inválido ou expirado.")
             );
