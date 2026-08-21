@@ -32,12 +32,25 @@ public class EventoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Evento>> listarEventos(
+    public ResponseEntity<Object> listarEventos(
             @RequestParam(required = false) String cidade,
             @RequestParam(required = false) Long categoriaId,
-            @RequestParam(required = false) Long idUsuario) {
+            @RequestParam(required = false) Long idUsuario,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
         if (idUsuario != null)
             return ResponseEntity.ok(eventoRepository.findByIdUsuarioFk(idUsuario));
+
+        // Busca textual e/ou paginação: só entra nesse caminho se o cliente
+        // pedir explicitamente (q e/ou page/size), pra não quebrar quem
+        // consome a lista simples (ex: app mobile).
+        if (q != null || page != null || size != null) {
+            int pageFinal = page != null ? Math.max(page, 0) : 0;
+            int sizeFinal = size != null && size > 0 ? size : 12;
+            return ResponseEntity.ok(eventoService.buscarPaginado(q, categoriaId, cidade, pageFinal, sizeFinal));
+        }
+
         if (cidade != null && categoriaId != null)
             return ResponseEntity.ok(eventoService.findByCidadeAndCategoria(cidade, categoriaId));
         if (cidade != null)

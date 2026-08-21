@@ -1,8 +1,10 @@
 package com.TracoCultural.TracoCultural.model.services;
 
 import com.TracoCultural.TracoCultural.model.Repository.ComentarioRepository;
+import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.entity.Comentario;
+import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -20,6 +22,12 @@ public class ComentarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private EventoRepository eventoRepository;
+
+    @Autowired
+    private NotificacaoService notificacaoService;
 
     public List<Comentario> listarPorEvento(Long eventoId) {
         List<Comentario> comentarios = comentarioRepository.findByIdEventoFkOrderByDataCriacaoDesc(eventoId);
@@ -57,6 +65,18 @@ public class ComentarioService {
 
         Comentario salvo = comentarioRepository.save(comentario);
         salvo.setNomeUsuario(usuario.getNome()); // só em memória, para já devolver no response
+
+        // Notifica o dono do evento, exceto se ele mesmo estiver comentando
+        Evento evento = eventoRepository.findById(eventoId).orElse(null);
+        if (evento != null && evento.getIdUsuarioFk() != null && !evento.getIdUsuarioFk().equals(usuario.getId())) {
+            notificacaoService.criar(
+                    evento.getIdUsuarioFk(),
+                    eventoId,
+                    "COMENTARIO",
+                    usuario.getNome() + " comentou no seu evento \"" + evento.getNome() + "\""
+            );
+        }
+
         return salvo;
     }
 

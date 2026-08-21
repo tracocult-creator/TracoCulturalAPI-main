@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CompartilhamentoRepository extends JpaRepository<Compartilhamento, Long> {
+    long countByEvento_Id(Long eventoId);
 }
