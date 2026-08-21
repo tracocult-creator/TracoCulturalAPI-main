@@ -18,7 +18,7 @@ public class Evento {
     @Column(length = 100, nullable = false)
     private String nome;
 
-    @Column(length = 255)
+    @Column(length = 5000)
     private String descricao;
 
     @Column(name = "cardImage")
@@ -32,10 +32,11 @@ public class Evento {
     private Date dataFim;
 
     @NotBlank(message = "Cidade é obrigatória")
-    @Column(length = 45)
+    @Column(length = 100
+    )
     private String cidade;
 
-    @Column(name = "linkExterno", length = 255)
+    @Column(name = "linkExterno", length = 5000)
     private String linkExterno;
 
     @Column(name = "idUsuarioFk")
