@@ -23,7 +23,7 @@ public class NotificacaoService {
     @Autowired
     private FavoritoRepository favoritoRepository;
     @Autowired
-    private EventoRepository eventoRepository;
+    private EventoRepository EventoRepository;
 
     public List<Notificacao> listar(Long usuarioId) {
         return notificacaoRepository.findByIdUsuarioFkOrderByDataCriacaoDesc(usuarioId);
