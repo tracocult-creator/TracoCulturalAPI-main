@@ -1,6 +1,8 @@
 package com.TracoCultural.TracoCultural.model.services;
 
+import com.TracoCultural.TracoCultural.model.Repository.ComentarioRepository;
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.dto.PaginaEventosDTO;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
@@ -9,6 +11,7 @@ import com.TracoCultural.TracoCultural.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -24,6 +27,12 @@ public class EventoService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private FavoritoRepository favoritoRepository;
 
 
     public List<Evento> findAll() {
@@ -84,9 +93,12 @@ public class EventoService {
         return eventoRepository.save(existente);
     }
 
+    @Transactional
     public void deleteById(Long id) {
         if (!eventoRepository.existsById(id))
             throw new RuntimeException("Evento não encontrado com o ID: " + id);
+        comentarioRepository.deleteByIdEventoFk(id);
+        favoritoRepository.deleteByEventoId(id);
         eventoRepository.deleteById(id);
     }
 

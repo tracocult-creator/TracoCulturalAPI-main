@@ -3,6 +3,7 @@ package com.TracoCultural.TracoCultural.model.services;
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
+import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Favorito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,16 @@ public class FavoritoService {
         favoritoRepository.delete(favorito);
     }
 
-    public List<Favorito> listarPorUsuario(Long usuarioId) {
-        return favoritoRepository.findByUsuarioId(usuarioId);
+    /**
+     * Retorna os eventos favoritados pelo usuário. Favoritos "órfãos" (cujo
+     * evento foi excluído sem limpeza — bug histórico) são filtrados aqui
+     * como segunda camada de proteção, além da limpeza feita em
+     * EventoService.deleteById.
+     */
+    public List<Evento> listarPorUsuario(Long usuarioId) {
+        return favoritoRepository.findByUsuarioId(usuarioId).stream()
+                .map(Favorito::getEvento)
+                .filter(evento -> evento != null && eventoRepository.existsById(evento.getId()))
+                .toList();
     }
 }

@@ -1,6 +1,7 @@
 package com.TracoCultural.TracoCultural.controller;
 
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
+import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Favorito;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import com.TracoCultural.TracoCultural.model.services.FavoritoService;
@@ -37,7 +38,7 @@ public class FavoritoController {
 
 
     @GetMapping
-    public ResponseEntity<List<Favorito>> listarFavoritos() {
+    public ResponseEntity<List<Evento>> listarFavoritos() {
         Usuario usuario = usuarioAutenticado();
         return ResponseEntity.ok(favoritoService.listarPorUsuario(usuario.getId()));
     }
@@ -64,7 +65,7 @@ public class FavoritoController {
         }
     }
 
-    
+
     @DeleteMapping("/{eventoId}")
     public ResponseEntity<Object> desfavoritar(@PathVariable Long eventoId) {
         try {

@@ -2,6 +2,7 @@ package com.TracoCultural.TracoCultural.model.services;
 
 import com.TracoCultural.TracoCultural.model.Repository.ComentarioRepository;
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.dto.UsuarioDTO;
 import com.TracoCultural.TracoCultural.model.entity.Comentario;
@@ -20,6 +21,7 @@ public class AdminService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private EventoRepository eventoRepository;
     @Autowired private ComentarioRepository comentarioRepository;
+    @Autowired private FavoritoRepository favoritoRepository;
  
     public Map<String, Long> dashboard() {
         long usuarios       = usuarioRepository.count();
@@ -46,8 +48,10 @@ public class AdminService {
         if (!usuarioRepository.existsById(id))
             throw new RuntimeException("Usuário não encontrado");
         List<Evento> eventos = eventoRepository.findByIdUsuarioFk(id);
-        for (Evento ev : eventos)
+        for (Evento ev : eventos) {
             comentarioRepository.deleteByIdEventoFk(ev.getId());
+            favoritoRepository.deleteByEventoId(ev.getId());
+        }
         eventoRepository.deleteByIdUsuarioFk(id);
         usuarioRepository.deleteById(id);
     }
@@ -85,6 +89,7 @@ public class AdminService {
         if (!eventoRepository.existsById(id))
             throw new RuntimeException("Evento não encontrado");
         comentarioRepository.deleteByIdEventoFk(id);
+        favoritoRepository.deleteByEventoId(id);
         eventoRepository.deleteById(id);
     }
 
