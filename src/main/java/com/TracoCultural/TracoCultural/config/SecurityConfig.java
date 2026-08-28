@@ -51,6 +51,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/eventos/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/eventos/*/comentarios").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/eventos/*/compartilhamentos/contagem").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/categorias").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/categorias/**").permitAll()
                 // Rotas protegidas
                 .requestMatchers(HttpMethod.POST,   "/api/v1/eventos").authenticated()
                 .requestMatchers(HttpMethod.PUT,    "/api/v1/eventos/**").authenticated()
