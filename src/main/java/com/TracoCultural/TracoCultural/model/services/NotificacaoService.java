@@ -3,9 +3,11 @@ package com.TracoCultural.TracoCultural.model.services;
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.NotificacaoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Favorito;
 import com.TracoCultural.TracoCultural.model.entity.Notificacao;
+import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class NotificacaoService {
     private FavoritoRepository favoritoRepository;
     @Autowired
     private EventoRepository EventoRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     public List<Notificacao> listar(Long usuarioId) {
         return notificacaoRepository.findByIdUsuarioFkOrderByDataCriacaoDesc(usuarioId);
@@ -57,6 +61,41 @@ public class NotificacaoService {
         n.setTipo(tipo);
         n.setMensagem(mensagem);
         notificacaoRepository.save(n);
+    }
+
+    /**
+     * Envio manual feito por um admin. "destino" pode ser:
+     * - "TODOS": todos os usuários cadastrados recebem
+     * - "FAVORITOS_EVENTO": só quem favoritou o evento indicado por eventoId
+     * eventoId é opcional em "TODOS" (fica só como referência, se informado)
+     * e obrigatório em "FAVORITOS_EVENTO".
+     * Retorna quantas notificações foram criadas.
+     */
+    public int enviarComoAdmin(Long eventoId, String mensagem, String destino) {
+        List<Long> destinatarios;
+
+        if ("FAVORITOS_EVENTO".equals(destino)) {
+            destinatarios = favoritoRepository.findByEventoId(eventoId).stream()
+                    .map(f -> f.getUsuario().getId())
+                    .distinct()
+                    .toList();
+        } else {
+            destinatarios = usuarioRepository.findAll().stream()
+                    .map(Usuario::getId)
+                    .toList();
+        }
+
+        List<Notificacao> notificacoes = destinatarios.stream().map(usuarioId -> {
+            Notificacao n = new Notificacao();
+            n.setIdUsuarioFk(usuarioId);
+            n.setIdEventoFk(eventoId);
+            n.setTipo("ADMIN");
+            n.setMensagem(mensagem);
+            return n;
+        }).toList();
+
+        notificacaoRepository.saveAll(notificacoes);
+        return notificacoes.size();
     }
 
     /**
