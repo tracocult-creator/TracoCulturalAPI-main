@@ -24,7 +24,15 @@ public class CompartilhamentoService {
     public long registrar(Long eventoId, String emailUsuario) {
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento não encontrado com o ID: " + eventoId));
+
         Usuario usuario = usuarioRepository.findByEmail(emailUsuario);
+        if (usuario == null) {
+            // Token válido mas a conta não existe mais (ex: apagada entre o
+            // login e essa ação) -- Compartilhamento.usuario é NOT NULL no
+            // banco, então sem essa checagem isso quebraria com um erro de
+            // constraint em vez de uma mensagem clara.
+            throw new RuntimeException("Usuário autenticado não encontrado");
+        }
 
         Compartilhamento compartilhamento = new Compartilhamento();
         compartilhamento.setEvento(evento);

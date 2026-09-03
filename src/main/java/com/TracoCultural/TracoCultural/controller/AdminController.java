@@ -140,29 +140,15 @@ public class AdminController {
     //notificacoes
 
     @PostMapping("/notificacoes")
-    public ResponseEntity<Object> enviarNotificacao(@RequestBody Map<String, Object> body, Authentication auth) {
+    public ResponseEntity<Object> enviarNotificacao(@RequestBody Map<String, String> body, Authentication auth) {
         if (!autenticado(auth).getIsAdm()) return forbidden();
 
-        String mensagem = body.get("mensagem") != null ? body.get("mensagem").toString().trim() : null;
-        String destino = body.get("destino") != null ? body.get("destino").toString() : "TODOS";
-        Object eventoIdRaw = body.get("eventoId");
-        Long eventoId = eventoIdRaw != null ? Long.valueOf(eventoIdRaw.toString()) : null;
-
+        String mensagem = body.get("mensagem") != null ? body.get("mensagem").trim() : null;
         if (mensagem == null || mensagem.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Mensagem é obrigatória"));
         }
-        if (!"TODOS".equals(destino) && !"FAVORITOS_EVENTO".equals(destino)) {
-            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Destino inválido"));
-        }
-        if ("FAVORITOS_EVENTO".equals(destino) && eventoId == null) {
-            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "eventoId é obrigatório para esse destino"));
-        }
 
-        try {
-            int total = notificacaoService.enviarComoAdmin(eventoId, mensagem, destino);
-            return ResponseEntity.ok(Map.of("status", 200, "message", "Notificação enviada", "totalEnviado", total));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", e.getMessage()));
-        }
+        int total = notificacaoService.enviarGeral(mensagem);
+        return ResponseEntity.ok(Map.of("status", 200, "message", "Notificação enviada", "totalEnviado", total));
     }
 }

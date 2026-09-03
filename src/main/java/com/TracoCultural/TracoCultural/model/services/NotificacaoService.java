@@ -64,32 +64,43 @@ public class NotificacaoService {
     }
 
     /**
-     * Envio manual feito por um admin. "destino" pode ser:
-     * - "TODOS": todos os usuários cadastrados recebem
-     * - "FAVORITOS_EVENTO": só quem favoritou o evento indicado por eventoId
-     * eventoId é opcional em "TODOS" (fica só como referência, se informado)
-     * e obrigatório em "FAVORITOS_EVENTO".
-     * Retorna quantas notificações foram criadas.
+     * Admin -> todo mundo. Sobre o sistema em si (manutenção, novidades,
+     * avisos gerais). Não tem relação com nenhum evento específico.
      */
-    public int enviarComoAdmin(Long eventoId, String mensagem, String destino) {
-        List<Long> destinatarios;
+    public int enviarGeral(String mensagem) {
+        List<Long> destinatarios = usuarioRepository.findAll().stream()
+                .map(Usuario::getId)
+                .toList();
 
-        if ("FAVORITOS_EVENTO".equals(destino)) {
-            destinatarios = favoritoRepository.findByEventoId(eventoId).stream()
-                    .map(f -> f.getUsuario().getId())
-                    .distinct()
-                    .toList();
-        } else {
-            destinatarios = usuarioRepository.findAll().stream()
-                    .map(Usuario::getId)
-                    .toList();
-        }
+        List<Notificacao> notificacoes = destinatarios.stream().map(usuarioId -> {
+            Notificacao n = new Notificacao();
+            n.setIdUsuarioFk(usuarioId);
+            n.setIdEventoFk(null);
+            n.setTipo("GERAL");
+            n.setMensagem(mensagem);
+            return n;
+        }).toList();
+
+        notificacaoRepository.saveAll(notificacoes);
+        return notificacoes.size();
+    }
+
+    /**
+     * Dono do evento (ou admin) -> só quem favoritou ESSE evento. Usado
+     * quando o evento muda de data/local/etc e quem já demonstrou interesse
+     * precisa saber. A checagem de "é o dono mesmo?" fica no controller.
+     */
+    public int notificarFavoritosDoEvento(Long eventoId, String mensagem) {
+        List<Long> destinatarios = favoritoRepository.findByEventoId(eventoId).stream()
+                .map(f -> f.getUsuario().getId())
+                .distinct()
+                .toList();
 
         List<Notificacao> notificacoes = destinatarios.stream().map(usuarioId -> {
             Notificacao n = new Notificacao();
             n.setIdUsuarioFk(usuarioId);
             n.setIdEventoFk(eventoId);
-            n.setTipo("ADMIN");
+            n.setTipo("EVENTO_ATUALIZACAO");
             n.setMensagem(mensagem);
             return n;
         }).toList();

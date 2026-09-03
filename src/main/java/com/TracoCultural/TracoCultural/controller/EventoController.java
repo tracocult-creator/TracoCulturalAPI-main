@@ -5,6 +5,7 @@ import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import com.TracoCultural.TracoCultural.model.services.EventoService;
+import com.TracoCultural.TracoCultural.model.services.NotificacaoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,8 @@ public class EventoController {
     private EventoRepository eventoRepository;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private NotificacaoService notificacaoService;
 
     private Usuario getUsuarioAutenticado() {
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -124,5 +127,39 @@ public class EventoController {
             return ResponseEntity.status(404).body(
                     Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage()));
         }
+    }
+
+    // Só o dono do evento (ou um admin) pode notificar quem favoritou ESSE
+    // evento -- diferente do /admin/notificacoes, que é geral pra todo mundo.
+    @PostMapping("/{id}/notificar-favoritos")
+    public ResponseEntity<Object> notificarFavoritos(@PathVariable String id, @RequestBody Map<String, String> body) {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) {
+            return ResponseEntity.status(401).body(Map.of("status", 401, "message", "Não autenticado"));
+        }
+
+        Evento evento;
+        try {
+            evento = eventoService.findById(Long.parseLong(id));
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("status", 400, "message", "O id informado não é válido: " + id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("status", 404, "message", e.getMessage()));
+        }
+
+        boolean ehDono = evento.getIdUsuarioFk() != null && evento.getIdUsuarioFk().equals(usuario.getId());
+        if (!ehDono && !usuario.getIsAdm()) {
+            return ResponseEntity.status(403).body(
+                    Map.of("status", 403, "message", "Só o criador do evento pode notificar quem favoritou"));
+        }
+
+        String mensagem = body.get("mensagem") != null ? body.get("mensagem").trim() : null;
+        if (mensagem == null || mensagem.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Mensagem é obrigatória"));
+        }
+
+        int total = notificacaoService.notificarFavoritosDoEvento(evento.getId(), mensagem);
+        return ResponseEntity.ok(Map.of("status", 200, "message", "Notificação enviada", "totalEnviado", total));
     }
 }

@@ -3,6 +3,7 @@ package com.TracoCultural.TracoCultural.model.services;
 import com.TracoCultural.TracoCultural.model.Repository.ComentarioRepository;
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.NotificacaoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.dto.PaginaEventosDTO;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
@@ -33,6 +34,9 @@ public class EventoService {
 
     @Autowired
     private FavoritoRepository favoritoRepository;
+
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
 
 
     public List<Evento> findAll() {
@@ -99,6 +103,7 @@ public class EventoService {
             throw new RuntimeException("Evento não encontrado com o ID: " + id);
         comentarioRepository.deleteByIdEventoFk(id);
         favoritoRepository.deleteByEventoId(id);
+        notificacaoRepository.deleteByIdEventoFk(id);
         eventoRepository.deleteById(id);
     }
 

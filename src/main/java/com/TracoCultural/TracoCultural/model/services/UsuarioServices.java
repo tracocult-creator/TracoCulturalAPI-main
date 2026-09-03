@@ -2,6 +2,8 @@ package com.TracoCultural.TracoCultural.model.services;
 
 import com.TracoCultural.TracoCultural.model.Repository.ComentarioRepository;
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.NotificacaoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
@@ -28,6 +30,12 @@ public class UsuarioServices {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private FavoritoRepository favoritoRepository;
+
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
 
 
     public List<Usuario> findAll() {
@@ -103,10 +111,27 @@ public class UsuarioServices {
                 return ResponseEntity.status(404).body(
                         Map.of("status", 404, "message", "Usuário não encontrado"));
 
+            // Ordem importa: tudo que referencia o usuário (ou os eventos dele)
+            // precisa sumir ANTES da linha do usuário/evento em si, senão o
+            // banco recusa por causa das chaves estrangeiras.
+
+            // 1. Favoritos QUE ESSE USUÁRIO fez (em qualquer evento, não só nos dele)
+            favoritoRepository.deleteByUsuarioId(uid);
+            // 2. Notificações desse usuário
+            notificacaoRepository.deleteByIdUsuarioFk(uid);
+            // 3. Comentários QUE ESSE USUÁRIO escreveu em eventos de outras pessoas
+            comentarioRepository.deleteByIdUsuarioFk(uid);
+
+            // 4. Para cada evento que esse usuário CRIOU: limpar quem
+            //    interagiu com ele (favoritos, comentários, notificações)
             List<Evento> eventos = eventoRepository.findByIdUsuarioFk(uid);
-            for (Evento ev : eventos)
+            for (Evento ev : eventos) {
+                favoritoRepository.deleteByEventoId(ev.getId());
                 comentarioRepository.deleteByIdEventoFk(ev.getId());
+                notificacaoRepository.deleteByIdEventoFk(ev.getId());
+            }
             eventoRepository.deleteByIdUsuarioFk(uid);
+
             usuarioRepository.deleteById(uid);
             return ResponseEntity.ok(Map.of("status", 200, "message", "Conta excluída com sucesso"));
         } catch (NumberFormatException e) {

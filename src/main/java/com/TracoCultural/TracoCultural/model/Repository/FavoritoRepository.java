@@ -14,4 +14,8 @@ public interface FavoritoRepository extends JpaRepository<Favorito, Long> {
     Optional<Favorito> findByUsuarioIdAndEventoId(Long usuarioId, Long eventoId);
     boolean existsByUsuarioIdAndEventoId(Long usuarioId, Long eventoId);
     void deleteByEventoId(Long eventoId);
+    // Precisa existir ANTES de apagar um usuário -- Favorito.usuario tem FK
+    // NOT NULL no banco, então apagar o usuário sem isso quebra com erro
+    // de violação de chave estrangeira.
+    void deleteByUsuarioId(Long usuarioId);
 }

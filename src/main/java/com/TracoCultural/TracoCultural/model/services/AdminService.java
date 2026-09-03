@@ -3,6 +3,7 @@ package com.TracoCultural.TracoCultural.model.services;
 import com.TracoCultural.TracoCultural.model.Repository.ComentarioRepository;
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.NotificacaoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.dto.UsuarioDTO;
 import com.TracoCultural.TracoCultural.model.entity.Comentario;
@@ -22,6 +23,7 @@ public class AdminService {
     @Autowired private EventoRepository eventoRepository;
     @Autowired private ComentarioRepository comentarioRepository;
     @Autowired private FavoritoRepository favoritoRepository;
+    @Autowired private NotificacaoRepository notificacaoRepository;
  
     public Map<String, Long> dashboard() {
         long usuarios       = usuarioRepository.count();
@@ -47,10 +49,17 @@ public class AdminService {
     public void deletarUsuario(Long id) {
         if (!usuarioRepository.existsById(id))
             throw new RuntimeException("Usuário não encontrado");
+
+        // Mesma ordem de UsuarioServices.deleteById -- ver comentário lá.
+        favoritoRepository.deleteByUsuarioId(id);
+        notificacaoRepository.deleteByIdUsuarioFk(id);
+        comentarioRepository.deleteByIdUsuarioFk(id);
+
         List<Evento> eventos = eventoRepository.findByIdUsuarioFk(id);
         for (Evento ev : eventos) {
-            comentarioRepository.deleteByIdEventoFk(ev.getId());
             favoritoRepository.deleteByEventoId(ev.getId());
+            comentarioRepository.deleteByIdEventoFk(ev.getId());
+            notificacaoRepository.deleteByIdEventoFk(ev.getId());
         }
         eventoRepository.deleteByIdUsuarioFk(id);
         usuarioRepository.deleteById(id);
@@ -90,6 +99,7 @@ public class AdminService {
             throw new RuntimeException("Evento não encontrado");
         comentarioRepository.deleteByIdEventoFk(id);
         favoritoRepository.deleteByEventoId(id);
+        notificacaoRepository.deleteByIdEventoFk(id);
         eventoRepository.deleteById(id);
     }
 

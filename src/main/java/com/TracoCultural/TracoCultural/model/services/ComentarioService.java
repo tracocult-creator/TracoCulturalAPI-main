@@ -58,6 +58,11 @@ public class ComentarioService {
             throw new IllegalArgumentException("Usuário autenticado não encontrado");
         }
 
+        // Evita comentário órfão apontando pra um evento que não existe
+        // (ex: id errado, ou evento apagado bem no meio da requisição).
+        Evento evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new IllegalArgumentException("Evento não encontrado com o ID: " + eventoId));
+
         Comentario comentario = new Comentario();
         comentario.setTexto(texto.trim());
         comentario.setIdEventoFk(eventoId);
@@ -66,15 +71,21 @@ public class ComentarioService {
         Comentario salvo = comentarioRepository.save(comentario);
         salvo.setNomeUsuario(usuario.getNome()); // só em memória, para já devolver no response
 
-        // Notifica o dono do evento, exceto se ele mesmo estiver comentando
-        Evento evento = eventoRepository.findById(eventoId).orElse(null);
-        if (evento != null && evento.getIdUsuarioFk() != null && !evento.getIdUsuarioFk().equals(usuario.getId())) {
-            notificacaoService.criar(
-                    evento.getIdUsuarioFk(),
-                    eventoId,
-                    "COMENTARIO",
-                    usuario.getNome() + " comentou no seu evento \"" + evento.getNome() + "\""
-            );
+        // Notifica o dono do evento, exceto se ele mesmo estiver comentando.
+        // Isolado num try/catch: se a criação da notificação falhar por
+        // qualquer motivo, o comentário (que já foi salvo com sucesso) não
+        // pode virar um erro 500 pro usuário -- ele só não recebe o aviso.
+        try {
+            if (evento.getIdUsuarioFk() != null && !evento.getIdUsuarioFk().equals(usuario.getId())) {
+                notificacaoService.criar(
+                        evento.getIdUsuarioFk(),
+                        eventoId,
+                        "COMENTARIO",
+                        usuario.getNome() + " comentou no seu evento \"" + evento.getNome() + "\""
+                );
+            }
+        } catch (RuntimeException ignored) {
+            // Comentário já está salvo; falha aqui não deve propagar como erro.
         }
 
         return salvo;
