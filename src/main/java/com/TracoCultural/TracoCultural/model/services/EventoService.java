@@ -9,7 +9,10 @@ import com.TracoCultural.TracoCultural.model.dto.PaginaEventosDTO;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import com.TracoCultural.TracoCultural.util.TextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +24,9 @@ import java.util.stream.Collectors;
 @Service
 public class EventoService {
 
+    private static final Logger logger = LoggerFactory.getLogger(EventoService.class);
     private static final int LIMITE_IMAGEM_BYTES = 2 * 1024 * 1024; // 2MB
+    private static final long TRES_DIAS_MS = 3L * 24 * 60 * 60 * 1000;
 
     @Autowired
     private EventoRepository eventoRepository;
@@ -140,5 +145,35 @@ public class EventoService {
         List<Evento> pagina = filtrados.subList(from, to);
 
         return new PaginaEventosDTO(pagina, page, size, filtrados.size());
+    }
+
+    /**
+     * Roda todo dia às 3h30 (fora do horário de pico): apaga eventos
+     * encerrados há mais de 3 dias. "Encerrado" = passou da dataFim (ou da
+     * dataInicio, se o evento não tiver dataFim -- evento de um dia só).
+     * Reaproveita deleteById, que já limpa favoritos/comentários/
+     * notificações relacionadas com segurança.
+     */
+    @Scheduled(cron = "0 30 3 * * *")
+    public void limparEventosEncerrados() {
+        Date agora = new Date();
+        Date limite = new Date(agora.getTime() - TRES_DIAS_MS);
+
+        List<Evento> todos = eventoRepository.findAll();
+        for (Evento evento : todos) {
+            Date dataReferencia = evento.getDataFim() != null ? evento.getDataFim() : evento.getDataInicio();
+            if (dataReferencia == null) continue;
+
+            boolean encerradoHaMaisDeTresDias = dataReferencia.before(limite);
+            if (!encerradoHaMaisDeTresDias) continue;
+
+            try {
+                deleteById(evento.getId());
+                logger.info("Evento '{}' (id={}) removido automaticamente — encerrado desde {}",
+                        evento.getNome(), evento.getId(), dataReferencia);
+            } catch (RuntimeException e) {
+                logger.error("Falha ao remover automaticamente o evento id={}: {}", evento.getId(), e.getMessage());
+            }
+        }
     }
 }
