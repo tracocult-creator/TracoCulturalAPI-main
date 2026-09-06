@@ -26,7 +26,8 @@ public class EventoService {
 
     private static final Logger logger = LoggerFactory.getLogger(EventoService.class);
     private static final int LIMITE_IMAGEM_BYTES = 2 * 1024 * 1024; // 2MB
-    private static final long TRES_DIAS_MS = 3L * 24 * 60 * 60 * 1000;
+    private static final long UM_DIA_MS = 24L * 60 * 60 * 1000;
+    private static final long DIAS_ATE_REMOVER_ENCERRADO = 3;
 
     @Autowired
     private EventoRepository eventoRepository;
@@ -148,31 +149,30 @@ public class EventoService {
     }
 
     /**
-     * Roda todo dia às 3h30 (fora do horário de pico): apaga eventos
-     * encerrados há mais de 3 dias. "Encerrado" = passou da dataFim (ou da
-     * dataInicio, se o evento não tiver dataFim -- evento de um dia só).
-     * Reaproveita deleteById, que já limpa favoritos/comentários/
-     * notificações relacionadas com segurança.
+     * Roda todo dia à 1h da manhã: apaga eventos encerrados há mais de 3 dias.
+     * "Encerrado" é definido pela dataFim; se o evento não tiver dataFim
+     * (campo opcional), usa a dataInicio como referência. Reaproveita
+     * deleteById() pra garantir a mesma limpeza de favoritos/comentários/
+     * notificações, evitando dados órfãos.
      */
-    @Scheduled(cron = "0 30 3 * * *")
-    public void limparEventosEncerrados() {
-        Date agora = new Date();
-        Date limite = new Date(agora.getTime() - TRES_DIAS_MS);
+    @Scheduled(cron = "0 0 1 * * *")
+    public void removerEventosEncerrados() {
+        Date limite = new Date(System.currentTimeMillis() - DIAS_ATE_REMOVER_ENCERRADO * UM_DIA_MS);
 
-        List<Evento> todos = eventoRepository.findAll();
-        for (Evento evento : todos) {
-            Date dataReferencia = evento.getDataFim() != null ? evento.getDataFim() : evento.getDataInicio();
-            if (dataReferencia == null) continue;
+        List<Evento> encerrados = eventoRepository.findAll().stream()
+                .filter(e -> {
+                    Date fim = e.getDataFim() != null ? e.getDataFim() : e.getDataInicio();
+                    return fim != null && fim.before(limite);
+                })
+                .toList();
 
-            boolean encerradoHaMaisDeTresDias = dataReferencia.before(limite);
-            if (!encerradoHaMaisDeTresDias) continue;
-
+        for (Evento evento : encerrados) {
             try {
                 deleteById(evento.getId());
-                logger.info("Evento '{}' (id={}) removido automaticamente — encerrado desde {}",
-                        evento.getNome(), evento.getId(), dataReferencia);
+                logger.info("Evento encerrado removido automaticamente: id={}, nome={}", evento.getId(), evento.getNome());
             } catch (RuntimeException e) {
-                logger.error("Falha ao remover automaticamente o evento id={}: {}", evento.getId(), e.getMessage());
+                // não deixa uma falha isolada travar a remoção dos outros eventos da lista
+                logger.warn("Falha ao remover evento encerrado id={}: {}", evento.getId(), e.getMessage());
             }
         }
     }
