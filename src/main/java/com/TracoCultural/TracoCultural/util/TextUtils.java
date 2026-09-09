@@ -3,11 +3,7 @@ package com.TracoCultural.TracoCultural.util;
 import java.text.Normalizer;
 import java.util.regex.Pattern;
 
-/**
- * Remove acentos e normaliza caixa para comparações de texto.
- * Espelha a lógica de lib/text.ts do app mobile, para que busca e
- * filtros se comportem da mesma forma em todas as pontas.
- */
+ 
 public class TextUtils {
 
     private static final Pattern DIACRITICOS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");

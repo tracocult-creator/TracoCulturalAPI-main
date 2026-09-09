@@ -38,7 +38,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.dashboard());
     }
 
-    //usuarioss
+    //usuarios
 
     @GetMapping("/usuarios")
     public ResponseEntity<Object> listarUsuarios(Authentication auth) {

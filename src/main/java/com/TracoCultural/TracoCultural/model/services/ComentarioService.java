@@ -32,7 +32,7 @@ public class ComentarioService {
     public List<Comentario> listarPorEvento(Long eventoId) {
         List<Comentario> comentarios = comentarioRepository.findByIdEventoFkOrderByDataCriacaoDesc(eventoId);
 
-        // Resolve o nome de cada autor em memória (não persistido na tabela Comentario)
+         
         Map<Long, String> cacheNomes = new HashMap<>();
         for (Comentario c : comentarios) {
             String nome = cacheNomes.computeIfAbsent(c.getIdUsuarioFk(), id -> {
@@ -58,8 +58,7 @@ public class ComentarioService {
             throw new IllegalArgumentException("Usuário autenticado não encontrado");
         }
 
-        // Evita comentário órfão apontando pra um evento que não existe
-        // (ex: id errado, ou evento apagado bem no meio da requisição).
+         
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new IllegalArgumentException("Evento não encontrado com o ID: " + eventoId));
 
@@ -70,11 +69,7 @@ public class ComentarioService {
 
         Comentario salvo = comentarioRepository.save(comentario);
         salvo.setNomeUsuario(usuario.getNome()); // só em memória, para já devolver no response
-
-        // Notifica o dono do evento, exceto se ele mesmo estiver comentando.
-        // Isolado num try/catch: se a criação da notificação falhar por
-        // qualquer motivo, o comentário (que já foi salvo com sucesso) não
-        // pode virar um erro 500 pro usuário -- ele só não recebe o aviso.
+ 
         try {
             if (evento.getIdUsuarioFk() != null && !evento.getIdUsuarioFk().equals(usuario.getId())) {
                 notificacaoService.criar(
@@ -85,7 +80,7 @@ public class ComentarioService {
                 );
             }
         } catch (RuntimeException ignored) {
-            // Comentário já está salvo; falha aqui não deve propagar como erro.
+            
         }
 
         return salvo;

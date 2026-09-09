@@ -15,9 +15,7 @@ public class CompartilhamentoController {
     @Autowired
     private CompartilhamentoService compartilhamentoService;
 
-    // Registrado só quando o usuário está logado (compartilhar não exige
-    // login no front — se não estiver logado, o front só abre o link/share
-    // nativo sem chamar esse endpoint).
+     
     @PostMapping
     public ResponseEntity<Object> registrar(@PathVariable Long eventoId, Authentication auth) {
         try {

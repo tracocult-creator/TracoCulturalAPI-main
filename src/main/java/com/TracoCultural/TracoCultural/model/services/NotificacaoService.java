@@ -63,10 +63,7 @@ public class NotificacaoService {
         notificacaoRepository.save(n);
     }
 
-    /**
-     * Admin -> todo mundo. Sobre o sistema em si (manutenção, novidades,
-     * avisos gerais). Não tem relação com nenhum evento específico.
-     */
+     
     public int enviarGeral(String mensagem) {
         List<Long> destinatarios = usuarioRepository.findAll().stream()
                 .map(Usuario::getId)
@@ -85,11 +82,7 @@ public class NotificacaoService {
         return notificacoes.size();
     }
 
-    /**
-     * Dono do evento (ou admin) -> só quem favoritou ESSE evento. Usado
-     * quando o evento muda de data/local/etc e quem já demonstrou interesse
-     * precisa saber. A checagem de "é o dono mesmo?" fica no controller.
-     */
+    
     public int notificarFavoritosDoEvento(Long eventoId, String mensagem) {
         List<Long> destinatarios = favoritoRepository.findByEventoId(eventoId).stream()
                 .map(f -> f.getUsuario().getId())
@@ -109,12 +102,7 @@ public class NotificacaoService {
         return notificacoes.size();
     }
 
-    /**
-     * Roda todo dia às 9h: avisa quem favoritou um evento que começa nas
-     * próximas 24h. Cada usuário só recebe um aviso por evento (checa se já
-     * existe notificação do tipo EVENTO_PROXIMO pra esse par usuário/evento
-     * antes de criar outra).
-     */
+     
     @Scheduled(cron = "0 0 9 * * *")
     public void avisarEventosProximos() {
         Date agora = new Date();

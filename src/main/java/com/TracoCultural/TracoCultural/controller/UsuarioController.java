@@ -48,8 +48,7 @@ public class UsuarioController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<Object> SalvarUsuario(@RequestBody Usuario usuario) {
-        // Endpoint legado desativado: criava a conta já ativa e sem exigir confirmação
-        // de email, contornando o fluxo de verificação. Use POST /api/v1/auth/register.
+         
         return ResponseEntity.status(410).body(
                 Map.of("status", 410, "message", "Use POST /api/v1/auth/register"));
     }

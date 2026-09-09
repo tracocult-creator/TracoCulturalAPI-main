@@ -27,10 +27,7 @@ public class CompartilhamentoService {
 
         Usuario usuario = usuarioRepository.findByEmail(emailUsuario);
         if (usuario == null) {
-            // Token válido mas a conta não existe mais (ex: apagada entre o
-            // login e essa ação) -- Compartilhamento.usuario é NOT NULL no
-            // banco, então sem essa checagem isso quebraria com um erro de
-            // constraint em vez de uma mensagem clara.
+             
             throw new RuntimeException("Usuário autenticado não encontrado");
         }
 

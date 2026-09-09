@@ -12,18 +12,18 @@ public class Notificacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Destinatário da notificação
+     
     @Column(name = "id_usuario_fk", nullable = false)
     private Long idUsuarioFk;
 
-    // Evento relacionado (opcional — nem toda notificação precisa de um)
+    
     @Column(name = "id_evento_fk")
     private Long idEventoFk;
 
     @Column(length = 255, nullable = false)
     private String mensagem;
 
-    // "COMENTARIO" | "EVENTO_PROXIMO"
+     
     @Column(length = 30, nullable = false)
     private String tipo;
 

@@ -117,12 +117,7 @@ public class EventoService {
         return eventoRepository.findByIdUsuarioFk(id);
     }
 
-    /**
-     * Busca por texto livre (nome, cidade, descrição — ignorando acento/caixa)
-     * com paginação em memória. Base ainda pequena o suficiente pra isso ser
-     * seguro; se a tabela crescer muito, trocar por uma query nativa com
-     * COLLATE accent-insensitive é o próximo passo.
-     */
+     
     public PaginaEventosDTO buscarPaginado(String q, Long categoriaId, String cidade, int page, int size) {
         List<Evento> base;
         if (cidade != null && categoriaId != null) {
@@ -148,13 +143,7 @@ public class EventoService {
         return new PaginaEventosDTO(pagina, page, size, filtrados.size());
     }
 
-    /**
-     * Roda todo dia à 1h da manhã: apaga eventos encerrados há mais de 3 dias.
-     * "Encerrado" é definido pela dataFim; se o evento não tiver dataFim
-     * (campo opcional), usa a dataInicio como referência. Reaproveita
-     * deleteById() pra garantir a mesma limpeza de favoritos/comentários/
-     * notificações, evitando dados órfãos.
-     */
+    
     @Scheduled(cron = "0 0 1 * * *")
     public void removerEventosEncerrados() {
         Date limite = new Date(System.currentTimeMillis() - DIAS_ATE_REMOVER_ENCERRADO * UM_DIA_MS);

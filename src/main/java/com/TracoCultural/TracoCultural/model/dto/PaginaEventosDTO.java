@@ -4,12 +4,7 @@ import com.TracoCultural.TracoCultural.model.entity.Evento;
 
 import java.util.List;
 
-/**
- * Resposta paginada de eventos. Só é usada quando o cliente manda
- * "q" (busca livre) e/ou "page"/"size" na query string — sem esses
- * parâmetros, GET /eventos continua devolvendo a lista simples de
- * sempre, pra não quebrar o app mobile.
- */
+
 public class PaginaEventosDTO {
 
     private List<Evento> content;

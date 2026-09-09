@@ -111,19 +111,12 @@ public class UsuarioServices {
                 return ResponseEntity.status(404).body(
                         Map.of("status", 404, "message", "Usuário não encontrado"));
 
-            // Ordem importa: tudo que referencia o usuário (ou os eventos dele)
-            // precisa sumir ANTES da linha do usuário/evento em si, senão o
-            // banco recusa por causa das chaves estrangeiras.
-
-            // 1. Favoritos QUE ESSE USUÁRIO fez (em qualquer evento, não só nos dele)
+             
             favoritoRepository.deleteByUsuarioId(uid);
-            // 2. Notificações desse usuário
-            notificacaoRepository.deleteByIdUsuarioFk(uid);
-            // 3. Comentários QUE ESSE USUÁRIO escreveu em eventos de outras pessoas
-            comentarioRepository.deleteByIdUsuarioFk(uid);
+             notificacaoRepository.deleteByIdUsuarioFk(uid);
+             comentarioRepository.deleteByIdUsuarioFk(uid);
 
-            // 4. Para cada evento que esse usuário CRIOU: limpar quem
-            //    interagiu com ele (favoritos, comentários, notificações)
+             
             List<Evento> eventos = eventoRepository.findByIdUsuarioFk(uid);
             for (Evento ev : eventos) {
                 favoritoRepository.deleteByEventoId(ev.getId());

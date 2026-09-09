@@ -65,7 +65,7 @@ public class AuthController {
         try {
             emailService.enviarCodigoConfirmacao(novo.getEmail(), novo.getNome(), novo.getCodigoVerificacao());
         } catch (RuntimeException e) {
-            // A conta ja foi criada (nao-confirmada); o usuario pode pedir reenvio depois.
+            
             return ResponseEntity.status(201).body(Map.of(
                     "id", novo.getId(),
                     "email", novo.getEmail(),

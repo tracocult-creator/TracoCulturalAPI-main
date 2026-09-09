@@ -43,12 +43,7 @@ public class FavoritoService {
         favoritoRepository.delete(favorito);
     }
 
-    /**
-     * Retorna os eventos favoritados pelo usuário. Favoritos "órfãos" (cujo
-     * evento foi excluído sem limpeza — bug histórico) são filtrados aqui
-     * como segunda camada de proteção, além da limpeza feita em
-     * EventoService.deleteById.
-     */
+    
     public List<Evento> listarPorUsuario(Long usuarioId) {
         return favoritoRepository.findByUsuarioId(usuarioId).stream()
                 .map(Favorito::getEvento)

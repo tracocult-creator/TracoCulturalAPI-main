@@ -44,10 +44,7 @@ public class EventoController {
             @RequestParam(required = false) Integer size) {
         if (idUsuario != null)
             return ResponseEntity.ok(eventoRepository.findByIdUsuarioFk(idUsuario));
-
-        // Busca textual e/ou paginação: só entra nesse caminho se o cliente
-        // pedir explicitamente (q e/ou page/size), pra não quebrar quem
-        // consome a lista simples (ex: app mobile).
+ 
         if (q != null || page != null || size != null) {
             int pageFinal = page != null ? Math.max(page, 0) : 0;
             int sizeFinal = size != null && size > 0 ? size : 12;
@@ -127,10 +124,8 @@ public class EventoController {
             return ResponseEntity.status(404).body(
                     Map.of("status", 404, "retorno", "Not Found", "message", e.getMessage()));
         }
-    }
-
-    // Só o dono do evento (ou um admin) pode notificar quem favoritou ESSE
-    // evento -- diferente do /admin/notificacoes, que é geral pra todo mundo.
+    } 
+    
     @PostMapping("/{id}/notificar-favoritos")
     public ResponseEntity<Object> notificarFavoritos(@PathVariable String id, @RequestBody Map<String, String> body) {
         Usuario usuario = getUsuarioAutenticado();
