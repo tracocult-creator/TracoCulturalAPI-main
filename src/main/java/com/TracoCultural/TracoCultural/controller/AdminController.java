@@ -148,7 +148,12 @@ public class AdminController {
             return ResponseEntity.badRequest().body(Map.of("status", 400, "message", "Mensagem é obrigatória"));
         }
 
-        int total = notificacaoService.enviarGeral(mensagem);
-        return ResponseEntity.ok(Map.of("status", 200, "message", "Notificação enviada", "totalEnviado", total));
+        var envio = notificacaoService.enviarGeral(mensagem, autenticado(auth).getId());
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "message", "Notificação enviada",
+                "totalEnviado", envio.getTotalDestinatarios(),
+                "envio", envio
+        ));
     }
 }

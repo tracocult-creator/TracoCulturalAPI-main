@@ -13,4 +13,6 @@ public interface NotificacaoRepository extends JpaRepository<Notificacao, Long> 
     boolean existsByIdUsuarioFkAndIdEventoFkAndTipo(Long usuarioId, Long eventoId, String tipo);
     void deleteByIdUsuarioFk(Long idUsuarioFk);
     void deleteByIdEventoFk(Long idEventoFk);
+    List<Notificacao> findByIdEnvioFk(Long idEnvioFk);
+    void deleteByIdEnvioFk(Long idEnvioFk);
 }

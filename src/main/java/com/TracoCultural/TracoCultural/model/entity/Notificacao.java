@@ -20,6 +20,12 @@ public class Notificacao {
     @Column(name = "id_evento_fk")
     private Long idEventoFk;
 
+    // liga essa notificação individual ao envio em lote que a originou
+    // (fica null pras notificações antigas, criadas antes dessa feature,
+    // e também pro aviso automático de "evento próximo")
+    @Column(name = "id_envio_fk")
+    private Long idEnvioFk;
+
     @Column(length = 255, nullable = false)
     private String mensagem;
 
@@ -46,6 +52,9 @@ public class Notificacao {
 
     public Long getIdEventoFk() { return idEventoFk; }
     public void setIdEventoFk(Long idEventoFk) { this.idEventoFk = idEventoFk; }
+
+    public Long getIdEnvioFk() { return idEnvioFk; }
+    public void setIdEnvioFk(Long idEnvioFk) { this.idEnvioFk = idEnvioFk; }
 
     public String getMensagem() { return mensagem; }
     public void setMensagem(String mensagem) { this.mensagem = mensagem; }
