@@ -25,21 +25,22 @@ public class AdminService {
     @Autowired private FavoritoRepository favoritoRepository;
     @Autowired private NotificacaoRepository notificacaoRepository;
  
+    
     public Map<String, Long> dashboard() {
-        long usuarios       = usuarioRepository.count();
-        long administradores = usuarioRepository.findAll().stream().filter(Usuario::getIsAdm).count();
-        long eventos        = eventoRepository.count();
-        long comentarios    = comentarioRepository.count();
-        long destacados     = eventoRepository.findAll().stream()
-                                .filter(e -> Boolean.TRUE.equals(e.getDestacado())).count();
-        return Map.of(
-            "usuarios",          usuarios,
-            "administradores",   administradores,
-            "eventos",           eventos,
-            "comentarios",       comentarios,
-            "eventosDestacados", destacados
-        );
-    }
+    long usuarios       = usuarioRepository.count();
+    long administradores = usuarioRepository.findAll().stream().filter(Usuario::getIsAdm).count();
+    long eventos        = eventoRepository.count();
+    long comentarios    = comentarioRepository.count();
+    long destacados     = eventoRepository.findAll().stream()
+                            .filter(e -> Boolean.TRUE.equals(e.getDestacado())).count();
+    return Map.of(
+        "totalUsuarios",     usuarios,
+        "totalAdmins",       administradores,
+        "totalEventos",      eventos,
+        "totalComentarios",  comentarios,
+        "eventosDestacados", destacados
+    );
+}
  
     public List<UsuarioDTO> listarUsuarios() {
         return usuarioRepository.findAll().stream().map(UsuarioDTO::new).toList();
