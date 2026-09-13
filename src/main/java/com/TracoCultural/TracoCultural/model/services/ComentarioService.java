@@ -7,6 +7,7 @@ import com.TracoCultural.TracoCultural.model.entity.Comentario;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -98,8 +99,17 @@ public class ComentarioService {
         boolean ehDono = comentario.getIdUsuarioFk().equals(usuario.getId());
         boolean ehAdmin = usuario.getIsAdm();
 
-        if (!ehDono && !ehAdmin) {
-            throw new SecurityException("SEM_PERMISSAO");
+        // Dono do EVENTO também pode moderar comentários feitos nele —
+        // antes só autor do comentário ou admin global conseguiam apagar.
+        Evento evento = eventoRepository.findById(comentario.getIdEventoFk()).orElse(null);
+        boolean ehDonoDoEvento = evento != null
+                && evento.getIdUsuarioFk() != null
+                && evento.getIdUsuarioFk().equals(usuario.getId());
+
+        if (!ehDono && !ehAdmin && !ehDonoDoEvento) {
+            // AccessDeniedException (não SecurityException) é o que o
+            // ComentarioController.deletar() sabe traduzir pra um 403 limpo.
+            throw new AccessDeniedException("Você não tem permissão para remover este comentário.");
         }
 
         comentarioRepository.deleteById(comentarioId);
