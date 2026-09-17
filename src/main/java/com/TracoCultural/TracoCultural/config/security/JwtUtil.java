@@ -45,6 +45,9 @@ public class JwtUtil {
             extrairEmail(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            // ===== DEBUG TEMPORÁRIO =====
+            System.err.println("[JWT DEBUG] Falha ao validar token: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
+            // ===== FIM DEBUG TEMPORÁRIO =====
             return false;
         }
     }
