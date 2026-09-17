@@ -45,20 +45,21 @@ public class EventoService {
     private NotificacaoRepository notificacaoRepository;
 
 
+    // ── Visão pública: só eventos já aprovados ──
     public List<Evento> findAll() {
-        return eventoRepository.findAll();
+        return eventoRepository.findByAprovadoTrue();
     }
 
     public List<Evento> findByCidade(String cidade) {
-        return eventoRepository.findByCidadeIgnoreCase(cidade);
+        return eventoRepository.findByCidadeIgnoreCaseAndAprovadoTrue(cidade);
     }
 
     public List<Evento> findByCategoria(Long categoriaId) {
-        return eventoRepository.findByCategoriaId(categoriaId);
+        return eventoRepository.findByCategoriaIdAndAprovadoTrue(categoriaId);
     }
 
     public List<Evento> findByCidadeAndCategoria(String cidade, Long categoriaId) {
-        return eventoRepository.findByCidadeIgnoreCaseAndCategoriaId(cidade, categoriaId);
+        return eventoRepository.findByCidadeIgnoreCaseAndCategoriaIdAndAprovadoTrue(cidade, categoriaId);
     }
 
     public Evento findById(Long id) {
@@ -76,6 +77,10 @@ public class EventoService {
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByEmail(email);
         evento.setIdUsuarioFk(usuario.getId());
+
+        // Todo evento entra pendente, sem exceção -- ignora qualquer valor
+        // que o cliente tenha mandado nesse campo. Só um admin aprova.
+        evento.setAprovado(false);
 
         return eventoRepository.save(evento);
     }
@@ -113,21 +118,22 @@ public class EventoService {
         eventoRepository.deleteById(id);
     }
 
+    // "Meus eventos" mostra TUDO do dono, aprovado ou não -- ele precisa
+    // ver o que ainda está pendente de aprovação.
     public List<Evento> findByUsuarioId(Long id) {
         return eventoRepository.findByIdUsuarioFk(id);
     }
 
-     
     public PaginaEventosDTO buscarPaginado(String q, Long categoriaId, String cidade, int page, int size) {
         List<Evento> base;
         if (cidade != null && categoriaId != null) {
-            base = eventoRepository.findByCidadeIgnoreCaseAndCategoriaId(cidade, categoriaId);
+            base = eventoRepository.findByCidadeIgnoreCaseAndCategoriaIdAndAprovadoTrue(cidade, categoriaId);
         } else if (cidade != null) {
-            base = eventoRepository.findByCidadeIgnoreCase(cidade);
+            base = eventoRepository.findByCidadeIgnoreCaseAndAprovadoTrue(cidade);
         } else if (categoriaId != null) {
-            base = eventoRepository.findByCategoriaId(categoriaId);
+            base = eventoRepository.findByCategoriaIdAndAprovadoTrue(categoriaId);
         } else {
-            base = eventoRepository.findAll();
+            base = eventoRepository.findByAprovadoTrue();
         }
 
         List<Evento> filtrados = base.stream()
@@ -143,7 +149,6 @@ public class EventoService {
         return new PaginaEventosDTO(pagina, page, size, filtrados.size());
     }
 
-    
     @Scheduled(cron = "0 0 1 * * *")
     public void removerEventosEncerrados() {
         Date limite = new Date(System.currentTimeMillis() - DIAS_ATE_REMOVER_ENCERRADO * UM_DIA_MS);
@@ -160,7 +165,6 @@ public class EventoService {
                 deleteById(evento.getId());
                 logger.info("Evento encerrado removido automaticamente: id={}, nome={}", evento.getId(), evento.getNome());
             } catch (RuntimeException e) {
-                // não deixa uma falha isolada travar a remoção dos outros eventos da lista
                 logger.warn("Falha ao remover evento encerrado id={}: {}", evento.getId(), e.getMessage());
             }
         }

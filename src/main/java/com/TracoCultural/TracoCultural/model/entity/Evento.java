@@ -52,6 +52,13 @@ public class Evento {
 
     @Column(name = "patrocinado")
     private Boolean patrocinado = false;
+
+    // Todo evento novo entra pendente (false) e só fica visível publicamente
+    // depois que um admin aprovar. EventoService.save() força esse valor
+    // sempre pra false na criação, ignorando qualquer coisa que o cliente
+    // mande -- ninguém além de admin pode se auto-aprovar.
+    @Column(name = "aprovado", nullable = false)
+    private Boolean aprovado = false;
  
 
 
@@ -140,4 +147,7 @@ public class Evento {
 
     public Boolean getPatrocinado() { return patrocinado; }
     public void setPatrocinado(Boolean patrocinado) { this.patrocinado = patrocinado; }
+
+    public Boolean getAprovado() { return aprovado; }
+    public void setAprovado(Boolean aprovado) { this.aprovado = aprovado; }
 }

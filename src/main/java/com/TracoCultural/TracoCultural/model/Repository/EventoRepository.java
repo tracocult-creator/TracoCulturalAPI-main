@@ -13,4 +13,13 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     List<Evento> findByCidadeIgnoreCaseAndCategoriaId(String cidade, Long categoriaId);
     List<Evento> findByIdUsuarioFk(Long idUsuarioFk);
     void deleteByIdUsuarioFk(Long idUsuarioFk);
+
+    // Visão pública -- só eventos já aprovados por um admin
+    List<Evento> findByAprovadoTrue();
+    List<Evento> findByCidadeIgnoreCaseAndAprovadoTrue(String cidade);
+    List<Evento> findByCategoriaIdAndAprovadoTrue(Long categoriaId);
+    List<Evento> findByCidadeIgnoreCaseAndCategoriaIdAndAprovadoTrue(String cidade, Long categoriaId);
+
+    // Fila de moderação do admin
+    List<Evento> findByAprovadoFalse();
 }

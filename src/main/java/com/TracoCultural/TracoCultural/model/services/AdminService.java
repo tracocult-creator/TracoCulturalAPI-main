@@ -33,12 +33,14 @@ public class AdminService {
     long comentarios    = comentarioRepository.count();
     long destacados     = eventoRepository.findAll().stream()
                             .filter(e -> Boolean.TRUE.equals(e.getDestacado())).count();
+    long pendentes      = eventoRepository.findByAprovadoFalse().size();
     return Map.of(
         "totalUsuarios",     usuarios,
         "totalAdmins",       administradores,
         "totalEventos",      eventos,
         "totalComentarios",  comentarios,
-        "eventosDestacados", destacados
+        "eventosDestacados", destacados,
+        "eventosPendentes",  pendentes
     );
 }
  
@@ -115,6 +117,18 @@ public class AdminService {
         Evento e = eventoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
         e.setPatrocinado(!Boolean.TRUE.equals(e.getPatrocinado()));
+        return eventoRepository.save(e);
+    }
+
+    // ── Moderação: aprovar/desaprovar ──
+    public List<Evento> listarEventosPendentes() {
+        return eventoRepository.findByAprovadoFalse();
+    }
+
+    public Evento alternarAprovacao(Long id) {
+        Evento e = eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
+        e.setAprovado(!Boolean.TRUE.equals(e.getAprovado()));
         return eventoRepository.save(e);
     }
  
