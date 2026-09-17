@@ -4,6 +4,7 @@ import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import com.TracoCultural.TracoCultural.model.services.AdminService;
+import com.TracoCultural.TracoCultural.model.services.EventoService;
 import com.TracoCultural.TracoCultural.model.services.NotificacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class AdminController {
 
     @Autowired private AdminService adminService;
+    @Autowired private EventoService eventoService;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private NotificacaoService notificacaoService;
 
@@ -116,6 +118,29 @@ public class AdminController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(Map.of("status", 404, "message", e.getMessage()));
         }
+    }
+
+    @PatchMapping("/eventos/{id}/aprovar")
+    public ResponseEntity<Object> aprovarEvento(@PathVariable Long id, Authentication auth) {
+        if (!autenticado(auth).getIsAdm()) return forbidden();
+        try {
+            return ResponseEntity.ok(adminService.aprovarEvento(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("status", 404, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/eventos/limpar-encerrados")
+    public ResponseEntity<Object> limparEventosEncerrados(Authentication auth) {
+        if (!autenticado(auth).getIsAdm()) return forbidden();
+        int removidos = eventoService.limparEventosEncerrados();
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "message", removidos == 0
+                        ? "Nenhum evento encerrado há mais de 3 dias encontrado."
+                        : removidos + " evento(s) removido(s).",
+                "removidos", removidos
+        ));
     }
 
     //comentrios

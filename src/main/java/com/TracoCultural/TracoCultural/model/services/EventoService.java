@@ -45,7 +45,6 @@ public class EventoService {
     private NotificacaoRepository notificacaoRepository;
 
 
-    // ── Visão pública: só eventos já aprovados ──
     public List<Evento> findAll() {
         return eventoRepository.findByAprovadoTrue();
     }
@@ -77,9 +76,9 @@ public class EventoService {
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByEmail(email);
         evento.setIdUsuarioFk(usuario.getId());
-
-        // Todo evento entra pendente, sem exceção -- ignora qualquer valor
-        // que o cliente tenha mandado nesse campo. Só um admin aprova.
+        // Todo evento novo nasce pendente -- só fica visível pro público depois
+        // que um admin aprovar. Ignora qualquer valor que o front tenha mandado
+        // nesse campo, pra ninguém conseguir se autoaprovar manipulando o payload.
         evento.setAprovado(false);
 
         return eventoRepository.save(evento);
@@ -118,12 +117,11 @@ public class EventoService {
         eventoRepository.deleteById(id);
     }
 
-    // "Meus eventos" mostra TUDO do dono, aprovado ou não -- ele precisa
-    // ver o que ainda está pendente de aprovação.
     public List<Evento> findByUsuarioId(Long id) {
         return eventoRepository.findByIdUsuarioFk(id);
     }
 
+     
     public PaginaEventosDTO buscarPaginado(String q, Long categoriaId, String cidade, int page, int size) {
         List<Evento> base;
         if (cidade != null && categoriaId != null) {
@@ -149,8 +147,20 @@ public class EventoService {
         return new PaginaEventosDTO(pagina, page, size, filtrados.size());
     }
 
+    
     @Scheduled(cron = "0 0 1 * * *")
     public void removerEventosEncerrados() {
+        int removidos = limparEventosEncerrados();
+        logger.info("Limpeza automática de eventos encerrados concluída: {} evento(s) removido(s).", removidos);
+    }
+
+    /**
+     * Faz a remoção de fato e devolve quantos eventos foram apagados.
+     * Separado do @Scheduled acima pra poder ser chamado tanto pelo cron
+     * (1h da manhã) quanto sob demanda, via endpoint de admin -- útil pra
+     * testar sem precisar esperar até de madrugada com o servidor no ar.
+     */
+    public int limparEventosEncerrados() {
         Date limite = new Date(System.currentTimeMillis() - DIAS_ATE_REMOVER_ENCERRADO * UM_DIA_MS);
 
         List<Evento> encerrados = eventoRepository.findAll().stream()
@@ -160,13 +170,17 @@ public class EventoService {
                 })
                 .toList();
 
+        int removidos = 0;
         for (Evento evento : encerrados) {
             try {
                 deleteById(evento.getId());
-                logger.info("Evento encerrado removido automaticamente: id={}, nome={}", evento.getId(), evento.getNome());
+                logger.info("Evento encerrado removido: id={}, nome={}", evento.getId(), evento.getNome());
+                removidos++;
             } catch (RuntimeException e) {
+                // não deixa uma falha isolada travar a remoção dos outros eventos da lista
                 logger.warn("Falha ao remover evento encerrado id={}: {}", evento.getId(), e.getMessage());
             }
         }
+        return removidos;
     }
 }
