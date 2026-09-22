@@ -1,15 +1,18 @@
 package com.TracoCultural.TracoCultural.model.services;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
@@ -22,11 +25,25 @@ public class EmailService {
     private static final String COR_TEXTO = "#2E2A26";
     private static final String COR_TEXTO_SUAVE = "#6B6560";
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
     @Value("${app.mail.remetente-nome:Traço Cultural}")
     private String remetenteNome;
+
+    // Endereço "de" que aparece como remetente. Não precisa existir de
+    // verdade nem estar verificado no Brevo -- só serve como identificação
+    // visual pro destinatário (plano free do Brevo permite isso).
+    @Value("${app.mail.remetente-email:tracocult@gmail.com}")
+    private String remetenteEmail;
+
+    @Value("${BREVO_API_KEY:}")
+    private String brevoApiKey;
+
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void enviarCodigoConfirmacao(String destinatario, String nome, String codigo) {
         String assunto = "Confirme seu cadastro - " + remetenteNome;
@@ -40,7 +57,7 @@ public class EmailService {
         enviar(destinatario, assunto, html);
     }
 
-  
+
     public void enviarCodigoRedefinicaoSenha(String destinatario, String nome, String codigo) {
         String assunto = "Redefinição de senha - " + remetenteNome;
         String html = montarTemplate(
@@ -96,15 +113,45 @@ public class EmailService {
                 .replace("\"", "&quot;");
     }
 
+    // Envia via API HTTP do Brevo em vez de SMTP -- o Render (plano free)
+    // bloqueia conexões de saída nas portas SMTP (25/465/587), mas HTTPS
+    // (porta 443) passa normalmente.
     private void enviar(String destinatario, String assunto, String htmlCorpo) {
+        if (brevoApiKey == null || brevoApiKey.isBlank()) {
+            logger.error("Falha ao enviar email para {}: BREVO_API_KEY nao configurada", destinatario);
+            throw new RuntimeException("Nao foi possivel enviar o email de confirmacao. Tente novamente mais tarde.");
+        }
+
         try {
-            MimeMessage mensagem = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mensagem, false, "UTF-8");
-            helper.setTo(destinatario);
-            helper.setSubject(assunto);
-            helper.setText(htmlCorpo, true);
-            mailSender.send(mensagem);
-        } catch (MailException | MessagingException e) {
+            Map<String, Object> payload = Map.of(
+                    "sender", Map.of("name", remetenteNome, "email", remetenteEmail),
+                    "to", List.of(Map.of("email", destinatario)),
+                    "subject", assunto,
+                    "htmlContent", htmlCorpo
+            );
+
+            String json = objectMapper.writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BREVO_API_URL))
+                    .timeout(Duration.ofSeconds(10))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("api-key", brevoApiKey)
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 300) {
+                logger.error("Falha ao enviar email para {}: status {} - corpo: {}",
+                        destinatario, response.statusCode(), response.body());
+                throw new RuntimeException("Nao foi possivel enviar o email de confirmacao. Tente novamente mais tarde.");
+            }
+
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
             logger.error("Falha ao enviar email para {}: {}", destinatario, e.getMessage());
             throw new RuntimeException("Nao foi possivel enviar o email de confirmacao. Tente novamente mais tarde.", e);
         }
