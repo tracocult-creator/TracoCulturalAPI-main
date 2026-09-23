@@ -13,6 +13,7 @@ public interface FavoritoRepository extends JpaRepository<Favorito, Long> {
     List<Favorito> findByEventoId(Long eventoId);
     Optional<Favorito> findByUsuarioIdAndEventoId(Long usuarioId, Long eventoId);
     boolean existsByUsuarioIdAndEventoId(Long usuarioId, Long eventoId);
+    long countByEventoId(Long eventoId);
     void deleteByEventoId(Long eventoId);
     void deleteByUsuarioId(Long usuarioId);
 }

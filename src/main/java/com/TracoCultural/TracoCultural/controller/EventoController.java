@@ -1,15 +1,20 @@
 package com.TracoCultural.TracoCultural.controller;
 
 import com.TracoCultural.TracoCultural.model.Repository.EventoRepository;
+import com.TracoCultural.TracoCultural.model.Repository.FavoritoRepository;
 import com.TracoCultural.TracoCultural.model.Repository.UsuarioRepository;
+import com.TracoCultural.TracoCultural.model.dto.EventoDetalheDTO;
 import com.TracoCultural.TracoCultural.model.entity.Evento;
 import com.TracoCultural.TracoCultural.model.entity.Usuario;
 import com.TracoCultural.TracoCultural.model.services.EventoService;
 import com.TracoCultural.TracoCultural.model.services.NotificacaoService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +25,8 @@ import java.util.Map;
 @RequestMapping("/api/v1/eventos")
 public class EventoController {
 
+    private static final Logger logger = LoggerFactory.getLogger(EventoController.class);
+
     @Autowired
     private EventoService eventoService;
     @Autowired
@@ -27,11 +34,41 @@ public class EventoController {
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
+    private FavoritoRepository favoritoRepository;
+    @Autowired
     private NotificacaoService notificacaoService;
 
     private Usuario getUsuarioAutenticado() {
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return usuarioRepository.findByEmail(email);
+    }
+
+    /**
+     * Igual getUsuarioAutenticado(), mas não estoura exceção quando não tem
+     * ninguém logado -- usado nos endpoints públicos (GET), onde o usuário
+     * pode estar navegando sem estar autenticado.
+     */
+    private Usuario getUsuarioAutenticadoOuNull() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || !(auth.getPrincipal() instanceof String email)) {
+            return null;
+        }
+        return usuarioRepository.findByEmail(email);
+    }
+
+    /**
+     * Roda a limpeza de eventos encerrados há mais de 3 dias toda vez que
+     * alguém abre a listagem (ou seja, toda vez que o app é aberto), já que
+     * o @Scheduled sozinho não é confiável em serviços tipo Render free tier,
+     * que dormem e podem nunca estar de pé às 1h da manhã pro cron disparar.
+     * Falha aqui nunca deve travar a listagem -- só loga e segue o jogo.
+     */
+    private void limparEncerradosSeNecessario() {
+        try {
+            eventoService.limparEventosEncerrados();
+        } catch (RuntimeException e) {
+            logger.warn("Falha ao rodar limpeza de eventos encerrados na abertura do app: {}", e.getMessage());
+        }
     }
 
     @GetMapping
@@ -42,6 +79,8 @@ public class EventoController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
+        limparEncerradosSeNecessario();
+
         if (idUsuario != null)
             return ResponseEntity.ok(eventoRepository.findByIdUsuarioFk(idUsuario));
  
@@ -68,7 +107,16 @@ public class EventoController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> buscarPorId(@PathVariable String id) {
         try {
-            return ResponseEntity.ok(eventoService.findById(Long.parseLong(id)));
+            Long eventoId = Long.parseLong(id);
+            Evento evento = eventoService.findById(eventoId);
+
+            long totalFavoritos = favoritoRepository.countByEventoId(eventoId);
+
+            Usuario usuario = getUsuarioAutenticadoOuNull();
+            boolean favoritadoPeloUsuario = usuario != null
+                    && favoritoRepository.existsByUsuarioIdAndEventoId(usuario.getId(), eventoId);
+
+            return ResponseEntity.ok(new EventoDetalheDTO(evento, totalFavoritos, favoritadoPeloUsuario));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body(
                     Map.of("status", 400, "retorno", "Bad Request", "message", "O id informado não é válido: " + id));
