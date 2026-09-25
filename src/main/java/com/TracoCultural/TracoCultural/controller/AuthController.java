@@ -55,6 +55,13 @@ public class AuthController {
             );
         }
 
+        if (usuario.getSenha().length() < 8) {
+    return ResponseEntity.badRequest().body(
+            Map.of("status", 400, "retorno", "Bad Request",
+                   "message", "Senha deve ter no mínimo 8 caracteres")
+    );
+}
+
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuario.setConfirmado(false);
         usuario.setCodigoVerificacao(gerarCodigo());
