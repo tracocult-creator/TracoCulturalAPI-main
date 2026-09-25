@@ -32,8 +32,7 @@ public class Evento {
     private Date dataFim;
 
     @NotBlank(message = "Cidade é obrigatória")
-    @Column(length = 100
-    )
+    @Column(length = 255)
     private String cidade;
 
     @Column(name = "linkExterno", length = 5000)
